@@ -19,6 +19,14 @@ import {
   RouterError,
 } from '../tenda';
 
+// Stub config so requireEnv() never throws during tests.
+vi.mock('@/lib/config', () => ({
+  devicesConfig: {
+    tendaN301: { ip: 'http://192.168.1.3', username: 'admin', password: 'testpw', timeout: 5000 },
+    tendaF3:   { ip: 'http://192.168.1.4', username: 'admin', password: 'testpw', timeout: 5000 },
+  },
+}));
+
 // ---------------------------------------------------------------------------
 // Axios mock setup
 // ---------------------------------------------------------------------------

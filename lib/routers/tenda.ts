@@ -355,6 +355,10 @@ function classifyError(err: unknown): RouterError {
     if (axiosErr.response?.status === 401 || axiosErr.response?.status === 403) {
       return new RouterError('invalid_credentials', 'Invalid router credentials', err);
     }
+    // No response at all = router unreachable (covers axios-mock-adapter networkError())
+    if (!axiosErr.response) {
+      return new RouterError('offline', 'Router is unreachable', err);
+    }
   }
   return new RouterError('unknown', String(err), err);
 }

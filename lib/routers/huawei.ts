@@ -153,7 +153,7 @@ async function login(client: AxiosInstance, username: string, password: string):
         /incorrect|invalid|error|login/i.test(body.slice(0, 500)) ||
         body.toLowerCase().includes('username') && !body.toLowerCase().includes('logout');
 
-      if (!isRejected || response.status < 400) {
+      if (!isRejected) {
         return; // login accepted
       }
 
@@ -385,6 +385,10 @@ function classifyError(err: unknown): RouterError {
     }
     if (axiosErr.response?.status === 401 || axiosErr.response?.status === 403) {
       return new RouterError('invalid_credentials', 'Invalid router credentials', err);
+    }
+    // No response at all = router unreachable (covers axios-mock-adapter networkError())
+    if (!axiosErr.response) {
+      return new RouterError('offline', 'Router is unreachable', err);
     }
   }
   return new RouterError('unknown', String(err), err);

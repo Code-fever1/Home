@@ -130,7 +130,7 @@ async function safeHuawei(): Promise<{ data: HuaweiResponse; error?: RouterError
     console.info('[aggregator/huawei] ✓ login OK — %d device(s)', data.deviceCount);
     return { data };
   } catch (err) {
-    const kind = err instanceof RouterError ? err.kind : 'unknown';
+    const kind = (err as RouterError)?.kind ?? 'unknown';
     const message = err instanceof Error ? err.message : String(err);
     console.warn('[aggregator/huawei] ✗ %s: %s', kind, message);
     return {
@@ -147,7 +147,7 @@ async function safeTendaN301(): Promise<{ data: TendaDevicesResponse; error?: Ro
     console.info('[aggregator/tenda-n301] ✓ login OK — %d device(s)', data.deviceCount);
     return { data };
   } catch (err) {
-    const kind = err instanceof RouterError ? err.kind : 'unknown';
+    const kind = (err as RouterError)?.kind ?? 'unknown';
     const message = err instanceof Error ? err.message : String(err);
     console.warn('[aggregator/tenda-n301] ✗ %s: %s', kind, message);
     return {
@@ -164,7 +164,7 @@ async function safeTendaF3(): Promise<{ data: TendaDevicesResponse; error?: Rout
     console.info('[aggregator/tenda-f3] ✓ login OK — %d device(s)', data.deviceCount);
     return { data };
   } catch (err) {
-    const kind = err instanceof RouterError ? err.kind : 'unknown';
+    const kind = (err as RouterError)?.kind ?? 'unknown';
     const message = err instanceof Error ? err.message : String(err);
     console.warn('[aggregator/tenda-f3] ✗ %s: %s', kind, message);
     return {
@@ -181,7 +181,7 @@ async function safeDlink(): Promise<{ data: DlinkDevicesResponse; error?: Router
     console.info('[aggregator/dlink] ✓ login OK — %d device(s)', data.deviceCount);
     return { data };
   } catch (err) {
-    const kind = err instanceof RouterError ? err.kind : 'unknown';
+    const kind = (err as RouterError)?.kind ?? 'unknown';
     const message = err instanceof Error ? err.message : String(err);
     console.warn('[aggregator/dlink] ✗ %s: %s', kind, message);
     return {
@@ -198,7 +198,7 @@ async function safeCamera(): Promise<{ data: CameraStatus; error?: RouterErrorIn
     console.info('[aggregator/camera] ✓ camera online — motion=%s', data.motionDetected);
     return { data };
   } catch (err) {
-    const kind = err instanceof CameraError ? err.kind : 'unknown';
+    const kind = (err as CameraError)?.kind ?? 'unknown';
     const message = err instanceof Error ? err.message : String(err);
     console.warn('[aggregator/camera] ✗ %s: %s', kind, message);
     const ip = (err as { ip?: string }).ip ?? '';

@@ -187,14 +187,15 @@ async function fetchMotionStatus(client: AxiosInstance): Promise<boolean> {
 function classifyError(err: unknown): CameraError {
   const axiosErr = err as AxiosError;
   if (axiosErr.isAxiosError) {
-    if (axiosErr.code === 'ECONNREFUSED' || axiosErr.code === 'ENOTFOUND') {
-      return new CameraError('offline', 'Camera is unreachable', err);
-    }
     if (axiosErr.code === 'ETIMEDOUT' || axiosErr.code === 'ECONNABORTED') {
       return new CameraError('timeout', 'Camera request timed out', err);
     }
     if (axiosErr.response?.status === 401 || axiosErr.response?.status === 403) {
       return new CameraError('invalid_credentials', 'Invalid camera credentials', err);
+    }
+    // No response at all = camera unreachable (covers axios-mock-adapter networkError())
+    if (!axiosErr.response) {
+      return new CameraError('offline', 'Camera is unreachable', err);
     }
   }
   return new CameraError('unknown', String(err), err);
@@ -234,25 +235,47 @@ export async function getCameraStatus(): Promise<CameraStatus> {
   const client = createHttpClient(ip, username, password, timeout);
 
   try {
-    const [partial, motionDetected] = await Promise.all([
-      fetchCameraStatus(client, ip),
-      fetchMotionStatus(client),
-    ]);
+    // Primary probe — errors propagate directly (unlike fetchCameraStatus which swallows them)
+    const statusRes = await client.get('/api/v1/status');
+
+    if (statusRes.status === 401 || statusRes.status === 403) {
+      throw new CameraError('invalid_credentials', 'Invalid camera credentials');
+    }
+
+    // Parse primary response
+    const data = statusRes.data;
+    let model = 'IP Camera';
+    let firmwareVersion = 'unknown';
+    let uptime = 0;
+    let motionDetected = false;
+
+    if (typeof data === 'object' && data !== null) {
+      const obj = data as Record<string, unknown>;
+      model = String(obj.model ?? obj.deviceType ?? obj.Model ?? 'IP Camera');
+      firmwareVersion = String(obj.firmware ?? obj.firmwareVersion ?? obj.FirmwareVersion ?? 'unknown');
+      uptime = Number(obj.uptime ?? 0);
+      motionDetected = Boolean(obj.motionDetected ?? obj.motion ?? false);
+    }
+
+    if (!motionDetected) {
+      motionDetected = await fetchMotionStatus(client);
+    }
 
     return {
       device: 'IP Camera',
       ip,
       status: 'online',
-      model: partial.model ?? 'IP Camera',
-      firmwareVersion: partial.firmwareVersion ?? 'unknown',
+      model,
+      firmwareVersion,
       streamUrl: stream,
       snapshotUrl: snapshot,
-      motionDetected: partial.motionDetected ?? motionDetected,
-      uptime: partial.uptime ?? 0,
+      motionDetected,
+      uptime,
       source: 'live',
       fetchedAt: new Date().toISOString(),
     };
   } catch (err) {
+    if (err instanceof CameraError) throw err;
     const cameraErr = classifyError(err);
     console.warn(`[camera] ${cameraErr.kind}: ${cameraErr.message}`);
     throw cameraErr;

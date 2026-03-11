@@ -179,6 +179,10 @@ async function loginHnap(
   const publicKey = xmlTag(phase1Body, 'PublicKey');
   const cookie = xmlTag(phase1Body, 'Cookie');
 
+  if (phase1.status === 401 || phase1.status === 403) {
+    throw new RouterError('invalid_credentials', 'HNAP rejected credentials');
+  }
+
   if (!challenge || !publicKey) {
     throw new RouterError('login_failed', 'HNAP phase-1 did not return Challenge/PublicKey');
   }
@@ -230,6 +234,9 @@ async function login(
   username: string,
   password: string,
 ): Promise<LoginResult> {
+  let lastError: unknown = null;
+  let sawAuthFailure = false;
+
   // ── Strategy 1: Modern D-Link REST/JSON API ──────────────────────────────
   const jsonEndpoints = [
     { path: '/cgi-bin/auth_cgi', body: { cmd: 'login', id: username, password } },
@@ -243,6 +250,10 @@ async function login(
       const res = await client.post(path, JSON.stringify(body), {
         headers: { 'Content-Type': 'application/json', Referer: `${baseURL}/` },
       });
+      if (res.status === 401 || res.status === 403) {
+        sawAuthFailure = true;
+        continue;
+      }
       if (
         res.status < 400 &&
         typeof res.data === 'object' &&
@@ -255,8 +266,8 @@ async function login(
         console.info('[dlink] JSON login OK via %s', path);
         return { strategy: 'modern_json' };
       }
-    } catch {
-      // try next
+    } catch (err) {
+      lastError = err;
     }
   }
 
@@ -265,8 +276,10 @@ async function login(
     const privateKey = await loginHnap(client, baseURL, username, password);
     return { strategy: 'hnap', privateKey };
   } catch (err) {
-    if (err instanceof RouterError && err.kind === 'invalid_credentials') throw err;
-    // If HNAP endpoint not present, fall through
+    if (err instanceof RouterError && err.kind === 'invalid_credentials') {
+      sawAuthFailure = true;
+    }
+    lastError = err;
   }
 
   // ── Strategy 3: Classic form POST ────────────────────────────────────────
@@ -282,19 +295,29 @@ async function login(
       const res = await client.post(path, body, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded', Referer: `${baseURL}/` },
       });
+      if (res.status === 401 || res.status === 403) {
+        sawAuthFailure = true;
+        continue;
+      }
       const text = typeof res.data === 'string' ? res.data : '';
-      const isRejected =
-        res.status === 401 ||
-        res.status === 403 ||
-        /incorrect|invalid|failed|unauthorized/i.test(text.slice(0, 400));
-
+      const isRejected = /incorrect|invalid|failed|unauthorized/i.test(text.slice(0, 400));
       if (!isRejected && res.status < 400) {
         console.info('[dlink] Form login OK via %s', path);
         return { strategy: 'form' };
       }
-    } catch {
-      // try next
+    } catch (err) {
+      lastError = err;
     }
+  }
+
+  if (sawAuthFailure) {
+    throw new RouterError('invalid_credentials', 'D-Link rejected credentials');
+  }
+
+  // Propagate any recorded network-level error (offline / timeout)
+  if (lastError) {
+    const classified = classifyError(lastError);
+    if (classified.kind !== 'unknown') throw classified;
   }
 
   throw new RouterError('login_failed', 'All D-Link login strategies failed');
@@ -306,7 +329,7 @@ async function login(
 
 async function fetchDevicesJson(client: AxiosInstance): Promise<DlinkDevice[]> {
   const endpoints = [
-    '/cgi-bin/hostmanager_mgr.cgi?cmd=getHostList',
+    '/cgi-bin/hostmanager_mgr.cgi',
     '/cgi-bin/dhcps_clients.cgi',
     '/cgi-bin/connected_devices.cgi',
     '/cgi-bin/net_client_list.cgi',
@@ -519,6 +542,10 @@ function classifyError(err: unknown): RouterError {
     }
     if (axiosErr.response?.status === 401 || axiosErr.response?.status === 403) {
       return new RouterError('invalid_credentials', 'D-Link rejected credentials', err);
+    }
+    // No response at all = router unreachable (covers axios-mock-adapter networkError())
+    if (!axiosErr.response) {
+      return new RouterError('offline', 'D-Link router is unreachable', err);
     }
   }
   return new RouterError('unknown', String(err), err);

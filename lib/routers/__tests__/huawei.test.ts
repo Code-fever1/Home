@@ -14,6 +14,16 @@ import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { getConnectedDevices, getMockDevicesResponse, RouterError } from '../huawei';
 
+// Stub config so requireEnv() never throws during tests.
+vi.mock('@/lib/config', () => ({
+  routerConfig: {
+    huawei: { ip: 'http://100.10.10.1', username: 'admin', password: 'testpw', timeout: 5000 },
+  },
+  devicesConfig: {
+    huawei: { ip: 'http://100.10.10.1', username: 'admin', password: 'testpw', timeout: 5000 },
+  },
+}));
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
