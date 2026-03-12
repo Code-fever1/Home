@@ -1,0 +1,1477 @@
+﻿ï»¿<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge;chrome=1"><!-IE7 mode->
+<meta http-equiv="Pragma" content="no-cache" />
+<title></title>
+<link href="/Cuscss/login.css?20190628140257357004553184798"  media="all" rel="stylesheet" />
+<link href="/Cuscss/english/frame.css?20190628140257357004553184798"  media="all" rel="stylesheet" />
+<script language="JavaScript" src="/resource/common/md5.js?20190628140257357004553184798"></script>
+
+<style type="text/css">
+#first{
+background-color:white;
+height:25px;
+text-align: center;
+color: red;
+position:absolute;
+width: 380px;
+top: 312px;
+}
+
+
+#pwd_modify{
+border:1px solid #CCCCCC;
+width:650px;
+margin-left:600px;
+margin-top:140px;
+position:absolute;
+z-index:10;
+background:#FFFFFF;
+display:none;
+}
+
+#base_mask {
+width:100%;
+height:100%;
+position:absolute;
+left:0px;
+right:0px;
+z-index:2;
+filter: alpha(opacity=60);
+-moz-opacity: 0.6;
+-khtml-opacity: 0.6;
+opacity: 0.8;
+background-color:#eeeeee;
+display:none;
+}
+
+
+</style>
+<script language="JavaScript" src="/resource/common/RndSecurityFormat.js?20190628140257357004553184798"></script>
+<script language="JavaScript" src="/resource/common/safelogin.js?20190628140257357004553184798"></script>
+<script type="text/javascript" src="/resource/common/jquery.min.js?20190628140257357004553184798"></script>
+<script id="langResource" language="JavaScript" src="/frameaspdes/english/ssmpdes.js?20190628140257357004553184798"></script>
+<script language="JavaScript" type="text/javascript">
+function GetRandCnt() { return 'f7ff25de7aedc2f5c22485e3ebb264d1'; }
+function MD5(str) { return hex_md5(str); }
+var FailStat ='0';
+var LoginTimes = '3';
+var ModeCheckTimes = '0';
+var Var_DefaultLang = 'english';
+var Language = Var_DefaultLang;
+var LockTime = '60';
+var LockLeftTime = '40';
+var errloginlockNum = '3';
+var errVerificationCode = '0';
+var locklefttimerhandle;
+var ProductName = 'HG8245W5';
+var SafeFlag = '1';
+var UserNameNormal = 'root';
+var ModifyPasswordFlagNormal = '1';
+var UserNameAdmin = 'telecomadmin';
+var ModifyPasswordFlagAdmin = '1';
+var smartlanfeature = '0';
+var IsSmartDev = "0";
+var Var_DefaultLang = 'english';
+var Var_LastLoginLang = 'english';
+var mngttype = '0';
+var logo_singtel = '0';
+var telmexwififeature = '0';
+var talktalkfeature = '0';
+var TypeWord_com = '';
+var languageList = 'english';
+var APPVersion = '1.1.1.1';
+var IsPTVDF = '0';
+var langDescList = new Array();
+var apcmodefeature = '0';
+var apghnfeature = '0';
+var curChangeMode = '0'; 
+var CfgMode ='OMANONT2';
+var ProductType = '1';
+var Ssid1 = 'Syed';
+var Ssid2 = 'Syed';
+var IsSingleWifi = '0';
+var IsDoubleWifi = '1';
+var DAUMLOGO = '';
+var DAUMFEATURE = "0";
+var isLanAccess = '0';
+
+langDescList["chinese"] = "ç®ä½ä¸­æ"; //or just 'ä¸­æ'?
+langDescList["english"] = "English";
+langDescList["japanese"] = "æ¥æ¬èª";
+langDescList["arabic"] = "Ø§ÙØ¹Ø±Ø¨ÙØ©";
+langDescList["portuguese"] = "PortuguÃªs";
+langDescList["spanish"] = "EspaÃ±ol";
+langDescList["turkish"] = "TÃ¼rkÃ§e";
+
+if ('DZAIN2WIFI' == CfgMode.toUpperCase())
+{
+document.write('<link rel="shortcut icon" href="/images/Dzain.ico" />');
+document.write('<link rel="Bookmark" href="/images/Dzain.ico" />');
+}
+
+var languageSet = new Array();
+
+if ((typeof languageList == 'string') && (languageList != ''))
+languageSet = languageList.split("|");
+
+if(Var_LastLoginLang == '')
+{
+Language = Var_DefaultLang;
+}
+else
+{
+Language = Var_LastLoginLang;
+}
+
+document.title = ProductName;
+
+function genLanguageList()
+{
+if (languageList == '')
+return false;
+
+var ChangeLanguage = '';
+
+if (languageSet.length > 1)
+{
+for (var lang in languageSet)
+{
+ChangeLanguage += '<td width="47%" nowrap><a id="' 
+   +  languageSet[lang] + '" href="#" name="' 
+   +  languageSet[lang] + '" onClick="onChangeLanguage(this.id);" class="changelanguage">[' 
+   +  langDescList[languageSet[lang]] + ']</a></td>';
+}
+document.getElementById('chooselagButton').innerHTML = ChangeLanguage;
+document.getElementById('chooselag').style.display = "block";
+}
+}
+
+function GetLoginDes(DesId)
+{
+return framedesinfo[DesId];
+}
+
+function showlefttime()
+{
+if (LockLeftTime <= 0)
+{
+window.location="/login.asp";
+return;
+}
+
+if(1 == IsPTVDF)
+{
+var html = GetLoginDes("frame011a") +  LockLeftTime + GetLoginDes(LockLeftTime == 1 ? "frame012c" : "frame012d");
+}
+else if (1 == talktalkfeature)
+{
+$("#DivErrPagePlace").css({
+width:"19%",
+})
+$("#DivErrIconPlace").css({
+width:"81%",
+})
+var html = GetLoginDes("frame011TALKTALK") +  LockLeftTime + GetLoginDes(LockLeftTime == 1 ? "frame012a" : "frame012");
+}
+else
+{
+var html = GetLoginDes("frame011") +  LockLeftTime + GetLoginDes(LockLeftTime == 1 ? "frame012a" : "frame012");
+}
+
+SetDivValue("DivErrPromt", html);
+
+LockLeftTime = LockLeftTime - 1;
+}
+
+function setErrorStatus()
+{
+clearInterval(locklefttimerhandle);
+if (((LoginTimes != null) && (LoginTimes != '') && (LoginTimes > 0))
+||( "1" == FailStat) || (ModeCheckTimes >= errloginlockNum) )
+{
+document.getElementById('DivErrPage').style.display = 'block';
+}
+
+if('1' == FailStat || (ModeCheckTimes >= errloginlockNum))
+{
+if(ModeCheckTimes >= errloginlockNum)
+{
+SetDivValue("DivErrPromt", GetLoginDes("frame013a"));
+}
+else
+{
+SetDivValue("DivErrPromt", GetLoginDes("frame013"));
+}
+
+setDisable('txt_Username', 1);
+setDisable('txt_Password', 1);
+setDisable('loginbutton',  1);
+}
+else if (LoginTimes >= errloginlockNum && parseInt(LockLeftTime) > 0)
+{
+if(1 == IsPTVDF)
+{
+var desc = "frame012d";
+if (parseInt(LockLeftTime) == 1)
+desc = "frame012c";
+
+var html = GetLoginDes("frame011a") +  LockLeftTime + GetLoginDes(desc);
+}
+else if (1 == talktalkfeature)
+{
+$("#DivErrPagePlace").css({
+width:"19%",
+})
+$("#DivErrIconPlace").css({
+width:"81%",
+})
+var html = GetLoginDes("frame011TALKTALK") +  LockLeftTime + GetLoginDes(desc);
+}
+else
+{
+var desc = "frame012";
+if (parseInt(LockLeftTime) == 1)
+desc = "frame012a";
+
+var html = GetLoginDes("frame011") +  LockLeftTime + GetLoginDes(desc);
+}
+
+SetDivValue("DivErrPromt", html);
+setDisable('txt_Username', 1);
+setDisable('txt_Password', 1);
+setDisable('loginbutton',  1);
+locklefttimerhandle = setInterval('showlefttime()', 1000);
+}
+else if( 1== errVerificationCode)
+{
+SetDivValue("DivErrPromt", "Incorrect validate code.");
+}
+else if( 2== errVerificationCode)
+{
+SetDivValue("DivErrPromt", "Login failure.");
+}
+else if (LoginTimes > 0 && LoginTimes < errloginlockNum)
+{
+if (1 == talktalkfeature)
+{
+$("#DivErrPagePlace").css({
+width:"15%",
+})
+$("#DivErrIconPlace").css({
+width:"85%",
+})
+SetDivValue("DivErrPromt",  GetLoginDes("frame014TALKTALK"));
+}
+else
+{
+SetDivValue("DivErrPromt",  GetLoginDes("frame014"));
+}
+}
+else
+{
+document.getElementById('DivErrPage').style.display = 'none';
+}
+}
+
+function IsIEBrower(num) {
+    var ua = navigator.userAgent.toLowerCase();
+    var isIE = ua.indexOf("msie")>-1;
+    var safariVersion;
+    if(isIE){
+        safariVersion =  ua.match(/msie ([\d.]+)/)[1];
+        var sa = parseInt(safariVersion);
+        if(safariVersion <= num ){
+           alert(framedesinfo["frame016"]);
+        }
+    }
+}
+
+function LoadFrame()
+{
+document.getElementById('txt_Username').focus();
+clearInterval(locklefttimerhandle);
+if (telmexwififeature == "1")
+{
+$("#accordion_help").css("display","block");
+$("#logininfo").css({
+marginTop:"30px",
+})
+$(".contenboxlogin").css({
+height:"40px",
+})
+}
+else
+{
+$("#accordion_help").css("display","none");
+}
+
+if ('STCAP' == CfgMode.toUpperCase())
+{
+onChangeLanguage(Language);
+}
+else
+{
+onChangeLanguage();
+}
+if ('ANTEL2' == CfgMode.toUpperCase() || 'ANTEL' == CfgMode.toUpperCase())
+{
+$("#txt_Username").val("user");
+$("#txt_Password").val("user");
+}
+init();
+}
+
+function SetCusLanguageInfo(language, activflag)
+{
+var node = document.getElementById(language);
+
+if ((null == node) || (undefined == node))
+return;
+
+var color = (activflag ? "#9b0000" : "#FFFFFF");
+node.style.color = color;
+}
+
+function init() {
+if (document.addEventListener) {
+document.addEventListener("keypress", onHandleKeyDown, false);
+} else {
+document.onkeypress = onHandleKeyDown;
+}
+}
+
+function onHandleKeyDown(event) {
+var e = event || window.event;
+var code = e.charCode || e.keyCode;
+
+if (code == 13) {
+LoginSubmit("loginbutton");
+}
+}
+
+function LoginSubmit(val)
+{
+var Username = document.getElementById('txt_Username');
+var Password = document.getElementById('txt_Password');
+var appName = navigator.appName;
+var version = navigator.appVersion;
+var CheckResult = 0;
+
+if (appName == "Microsoft Internet Explorer")
+{
+var versionNumber = version.split(" ")[3];
+if (parseInt(versionNumber.split(";")[0]) < 6)
+{
+alert(GetLoginDes('frame006'));
+return false;
+}
+}
+
+if (Username.value == "") {
+alert(GetLoginDes("frame007"));
+Username.focus();
+return false;
+}
+
+if (Password.value == "") {
+alert(GetLoginDes("frame009"));
+Password.focus();
+return false;
+}
+
+var cookie = document.cookie;
+if ("" != cookie)
+{
+var date = new Date();
+date.setTime(date.getTime() - 10000);
+var cookie22 = cookie + ";expires=" + date.toGMTString();
+document.cookie=cookie22;
+}
+
+ if ('PLDT' == CfgMode.toUpperCase() || 'PLDT2' == CfgMode.toUpperCase())
+{
+
+if ((Username.value == UserNameNormal) && (ModifyPasswordFlagNormal == 0))
+{
+CheckResult = CheckPassword(Password.value);
+if (CheckResult == 1)
+{
+document.getElementById('base_mask').style.display = 'block';
+document.getElementById('pwd_modify').style.display = 'block';
+document.getElementById('old_password').focus();
+if (1 == IsSingleWifi)
+{
+document.getElementById('modify_pwd_ssid1').style.display = 'block';
+document.getElementById('modify_pwd_ssid2').style.display = 'none';
+document.getElementById('modify_pwd_label').style.display = 'block';
+document.getElementById('pwd_modify').style.height = '295px';
+document.getElementById('update').style.top = '90px';
+document.getElementById('ssid1_name').innerHTML = Ssid1;
+document.getElementById('ssid1_name_lebel').innerHTML = 'WiFi SSID:';
+}
+else if (1 == IsDoubleWifi)
+{
+document.getElementById('modify_pwd_ssid1').style.display = 'block';
+document.getElementById('modify_pwd_ssid2').style.display = 'block';
+document.getElementById('modify_pwd_label').style.display = 'block';
+document.getElementById('pwd_modify').style.height = '355px';
+document.getElementById('update').style.top = '150px';
+document.getElementById('ssid1_name').innerHTML = Ssid1;
+document.getElementById('ssid2_name').innerHTML = Ssid2;
+document.getElementById('ssid1_name_lebel').innerHTML = '2.4G WiFi SSID:';
+}
+else
+{
+document.getElementById('modify_pwd_ssid1').style.display = 'none';
+document.getElementById('modify_pwd_ssid2').style.display = 'none';
+document.getElementById('modify_pwd_label').style.display = 'none';
+document.getElementById('pwd_modify').style.height = '200px';
+document.getElementById('update').style.top = '15px';
+}
+return false;
+}
+}
+else if ((Username.value == UserNameAdmin) && (ModifyPasswordFlagAdmin == 0))
+{
+CheckResult = CheckPassword(Password.value);
+if (CheckResult == 1)
+{
+document.getElementById('base_mask').style.display = 'block';
+document.getElementById('pwd_modify').style.display = 'block';
+document.getElementById('old_password').focus();
+document.getElementById('modify_pwd_ssid1').style.display = 'none';
+document.getElementById('modify_pwd_ssid2').style.display = 'none';
+document.getElementById('modify_pwd_label').style.display = 'none';
+document.getElementById('pwd_modify').style.height = '200px';
+document.getElementById('update').style.top = '15px';
+return false;
+}
+}
+}
+
+var cnt;
+var Form = new webSubmitForm();
+
+$.ajax({
+type : "POST",
+async : false,
+cache : false,
+url : '/asp/GetRandCount.asp',
+success : function(data) {
+cnt = data;
+}
+});
+var Form = new webSubmitForm();
+var cookie2 = "Cookie=body:" + "Language:" + Language + ":" + "id=-1;path=/";
+Form.addParameter('UserName', Username.value);
+Form.addParameter('PassWord', base64encode(Password.value));
+Form.addParameter('Language', Language);
+document.cookie = cookie2;
+Username.disabled = true;
+Password.disabled = true;
+Form.setAction('/login.cgi');
+Form.addParameter('x.X_HW_Token', cnt);
+Form.submit();
+return true;
+}
+
+function Refresh()
+{
+window.location.href="/login.asp";
+}
+
+function onChangeLanguage(paralanguage)
+{
+if ('STCAP' == CfgMode.toUpperCase())
+{
+$("#accountstc").css('display', 'block');
+$("#Passwordstc").css('display', 'block');
+$("#account").css('display', 'none');
+$("#Password").css('display', 'none');
+if(paralanguage == 'arabic')
+{
+$(".labelBoxlogin").css('float', 'right');
+$(".contenboxlogin").css('float', 'left');
+$(".contentItemlogin").css('margin-left', '25%');
+$(".contentItemlogin").css('width', '38%');
+$(".labelBoxlogin").css('text-align', 'left');
+$("#txt_Username").css('direction', 'rtl');
+$("#txt_Password").css('direction', 'rtl');
+
+$('#DivErrIcon').css("float", "right");
+$('#DivErrPromt').css("float", "right");
+$('#DivErrPromt').css("direction", "rtl");
+
+$('#brandlog_stcap').css("float", "right");
+$('#ProductName').css("margin-left", "700px");
+
+$('#welcomtext').css("direction", "rtl");
+
+}
+else if (paralanguage == 'english')
+{
+$(".labelBoxlogin").css('float', 'left');
+$(".contenboxlogin").css('float', 'right');
+$(".contentItemlogin").css('margin-left', '23%');
+$(".contentItemlogin").css('width', '38%');
+$(".labelBoxlogin").css('text-align', '-webkit-right');
+$("#txt_Username").css('direction', 'ltr');
+$("#txt_Password").css('direction', 'ltr');
+
+$('#DivErrIcon').css("float", "left");
+$('#DivErrPromt').css("float", "left");
+$("#DivErrPromt").css('direction', "");
+
+$('#brandlog_stcap').css("float", "");
+$('#ProductName').css("margin-left", "");
+
+$('#welcomtext').css("direction", "");
+
+}
+if (paralanguage != null)
+{
+SetCusLanguageInfo(Language, false); //deactivate old language
+Language = paralanguage;
+}
+}
+else
+{
+if (paralanguage != null)
+{
+if (Language == paralanguage) //same language, do nothing
+return;
+
+SetCusLanguageInfo(Language, false); //deactivate old language
+
+Language = paralanguage;
+}
+}
+var langSrc = "/frameaspdes/" + Language + "/ssmpdes.js";
+loadLanguage("langResource", langSrc, onLanguageChanged);
+}
+
+function onLanguageChanged()
+{
+ParseBindTextByTagName(framedesinfo, "span",  1);
+ParseBindTextByTagName(framedesinfo, "div",   1);
+ParseBindTextByTagName(framedesinfo, "input", 2);
+
+SetCusLanguageInfo(Language, true);//activate new language
+
+setErrorStatus();
+}
+
+function loadLanguage(id, url, callback)
+{
+var docHead = document.getElementsByTagName('head')[0];
+var langScript = document.getElementById(id);
+if (langScript != null) {
+docHead.removeChild(langScript);
+}
+
+try
+{
+langScript = document.createElement('script');
+langScript.setAttribute('type', 'text/javascript');
+langScript.setAttribute('src',  url);
+langScript.setAttribute('id',   id);
+if (callback != null) 
+{
+langScript.onload = langScript.onreadystatechange = function() 
+{
+if (langScript.ready) 
+{
+return false;
+}
+if (!langScript.readyState || langScript.readyState == "loaded" || langScript.readyState == 'complete') 
+{
+langScript.ready = true;
+callback();
+}
+};
+}
+docHead.appendChild(langScript);
+}
+catch(e)
+{}
+}
+
+
+function isValidAscii(val)
+{
+for ( var i = 0 ; i < val.length ; i++ )
+{
+var ch = val.charAt(i);
+if ( ch <= ' ' || ch > '~' )
+{
+return false;
+}
+}
+return true;
+}
+
+function isLowercaseInString(str)
+{
+var lower_reg = /^.*([a-z])+.*$/;
+var MyReg = new RegExp(lower_reg);
+if ( MyReg.test(str) )
+{
+return true;
+}
+return false;
+}
+
+function isUppercaseInString(str)
+{
+var upper_reg = /^.*([A-Z])+.*$/;
+var MyReg = new RegExp(upper_reg);
+if ( MyReg.test(str) )
+{
+return true;
+}
+return false;
+}
+
+function isDigitInString(str)
+{
+var digit_reg = /^.*([0-9])+.*$/;
+var MyReg = new RegExp(digit_reg);
+if ( MyReg.test(str) )
+{
+return true;
+}
+return false;
+}
+
+function isSpecialCharacterNoSpace(str)
+{
+var specia_Reg =/^.*[`~!@#\$%\^&\*\(\)_\+\-=\[\]\{\}\'\;\,\./:\"\?><\\\|]{1,}.*$/;
+var MyReg = new RegExp(specia_Reg);
+if ( MyReg.test(str) )
+{
+return true;
+}
+return false;
+}
+
+function CompareString(srcstr,deststr)
+{
+var reverestr=(srcstr.split("").reverse().join(""));
+if ( srcstr == deststr )
+{
+return false;
+}
+
+if (reverestr == deststr )
+{
+return false;
+}
+return true;
+}
+
+function CheckPwdIsComplex(str)
+{
+var i = 0;
+
+if ( 6 > str.length )
+{
+return false;
+}
+
+if (!CompareString(str,UserNameNormal) )
+{
+return false;
+}
+
+if ( isLowercaseInString(str) )
+{
+i++;
+}
+
+if ( isUppercaseInString(str) )
+{
+i++;
+}
+
+if ( isDigitInString(str) )
+{
+i++;
+}
+
+if ( isSpecialCharacterNoSpace(str) )
+{
+i++;
+}
+
+if ( i >= 2 )
+{
+return true;
+}
+return false;
+}
+
+function CheckPassword(PwdForCheck)
+{
+var Username = document.getElementById('txt_Username');
+var NormalPwdInfo = FormatUrlEncode(PwdForCheck);
+var CheckResult = 0;
+var url_check_pwd = 0;
+
+if (Username.value == UserNameNormal)
+{
+url_check_pwd = '/asp/CheckNormalPwdNotLogin.asp?&1=1';
+}
+else if (Username.value == UserNameAdmin)
+{
+url_check_pwd = '/asp/CheckAdminPwdNotLogin.asp?&1=1';
+}
+
+$.ajax({
+type : "POST",
+async : false,
+cache : false,
+url : url_check_pwd,
+data :'NormalPwdInfo='+NormalPwdInfo,
+success : function(data) {
+CheckResult=data;
+}
+});
+return CheckResult;
+}
+
+function isHexaDigit(digit) {
+   var hexVals = new Array("0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+                           "A", "B", "C", "D", "E", "F", "a", "b", "c", "d", "e", "f");
+   var len = hexVals.length;
+   var i = 0;
+   var ret = false;
+   for ( i = 0; i < len; i++ )
+      if ( digit == hexVals[i] ) break;
+   if ( i < len )
+      ret = true;
+   return ret;
+}
+function isValidWPAPskKey(val)
+{
+    var ret = false;
+    var len = val.length;
+    var maxSize = 64;
+    var minSize = 8;
+    if (!isValidAscii(val))
+    {
+       return false;
+    }
+    if ( len >= minSize && len < maxSize )
+    {  
+ret = true;
+    }
+    else if ( len == maxSize )
+    {
+        for ( i = 0; i < maxSize; i++ )
+            if ( isHexaDigit(val.charAt(i)) == false )
+                break;
+        if ( i == maxSize )
+            ret = true;
+    }
+    else
+    {      
+ret = false;
+    }
+    return ret;
+}
+function CheckPasswordSsid1()
+{
+var Username = document.getElementById('txt_Username');
+/* ç®¡çåè´¦æ·ä¸å¼ºå¶ä¿®æ¹WiFiï¼å½ç¶ä¹ä¸éè¦å»æ ¡éªä¿®æ¹çWiFiï¼ç´æ¥è¿åtrue */
+if (Username.value == UserNameAdmin)
+{
+return true;
+}
+/* æ²¡æWiFiä¸æ ¡éªä¿®æ¹çWiFiï¼ç´æ¥è¿åtrue */
+if ((IsSingleWifi != 1) && (IsDoubleWifi !=1 ))
+{
+return true;
+}
+if (isValidWPAPskKey(getValue('ssid1_password')) == false)
+{
+return false;
+}
+return true;
+}
+function CheckPasswordSsid2()
+{
+var Username = document.getElementById('txt_Username');
+if (Username.value == UserNameAdmin)
+{
+return true;
+}
+
+if ((IsSingleWifi != 1) && (IsDoubleWifi !=1 ))
+{
+return true;
+}
+
+if (IsSingleWifi == 1) 
+{
+return true;
+}
+if (isValidWPAPskKey(getValue('ssid2_password')) == false)
+{
+return false;
+}
+return true;
+}
+
+function getValue(sId)
+{
+var item;
+if (null == (item = getElement(sId)))
+{
+debug(sId + " is not existed" );
+return -1;
+}
+
+return item.value;
+}
+
+function CheckParameter()
+{
+var oldPassword = document.getElementById("old_password");
+var newPassword = document.getElementById("new_password");
+var cfmPassword = document.getElementById("confirm_password");
+var CheckResult = 0;
+var CheckResultPwdSsid1 = 0;
+var CheckResultPwdSsid2 = 0;
+
+if (oldPassword.value == "")
+{
+alert("The old password cannot be left blank.");
+return false;
+}
+
+if (newPassword.value == "")
+{
+alert("The new password cannot be left blank.");
+return false;
+}
+
+if (newPassword.value.length > 127)
+{
+alert("The password must consist of 1 to 127 characters.");
+return false;
+}
+
+if (!isValidAscii(newPassword.value))
+{
+alert("The new password contains invalid characters. Enter a valid one.");
+return false;
+}
+
+if (cfmPassword.value != newPassword.value)
+{
+alert("The confirm password is different from the new password.");
+return false;
+}
+
+CheckResultPwdSsid1 = CheckPasswordSsid1();
+if (CheckResultPwdSsid1 !=1)
+{
+alert("The wifi password of "+Ssid1+" must be between 8 and 63 characters or 64 hexadecimal characters.");
+return false;
+}
+CheckResultPwdSsid2 = CheckPasswordSsid2();
+if (CheckResultPwdSsid2 !=1)
+{
+alert("The wifi password of "+Ssid2+" must be between 8 and 63 characters or 64 hexadecimal characters.");
+return false;
+}
+CheckResult = CheckPassword(oldPassword.value);
+
+if (CheckResult != 1)
+{
+alert("Incorrect old password. Please retry.");
+return false;
+}
+
+if(!CheckPwdIsComplex(newPassword.value))
+{
+alert("The password strength is too weak. Configure it again.");
+return false;
+}
+
+return true;
+}
+
+function SubmitUpdate()
+{
+var Username = document.getElementById('txt_Username');
+
+if(!CheckParameter())
+{
+return false;
+}
+
+var Form = new webSubmitForm();
+
+
+
+if (Username.value == UserNameNormal)
+{
+if (1 == IsSingleWifi)
+{
+Form.addParameter('x.PreSharedKey', getValue('ssid1_password'));
+Form.addParameter('z.Password', getValue('new_password'));
+Form.setAction('MdfPwdNormalNoLg.cgi?&x=InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.PreSharedKey.1&z=InternetGatewayDevice.UserInterface.X_HW_WebUserInfo.1&RequestFile=login.asp');
+}
+else if (1 == IsDoubleWifi)
+{
+Form.addParameter('x.PreSharedKey', getValue('ssid1_password'));
+Form.addParameter('y.PreSharedKey', getValue('ssid2_password'));
+Form.addParameter('z.Password', getValue('new_password'));
+Form.setAction('MdfPwdNormalNoLg.cgi?&x=InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.PreSharedKey.1&y=InternetGatewayDevice.LANDevice.1.WLANConfiguration.5.PreSharedKey.1&z=InternetGatewayDevice.UserInterface.X_HW_WebUserInfo.1&RequestFile=login.asp');
+}
+else
+{
+Form.addParameter('z.Password', getValue('new_password'));
+Form.setAction('MdfPwdNormalNoLg.cgi?&z=InternetGatewayDevice.UserInterface.X_HW_WebUserInfo.1&RequestFile=login.asp');
+}
+}
+else if (Username.value == UserNameAdmin)
+{
+Form.addParameter('z.Password', getValue('new_password'));
+Form.setAction('MdfPwdAdminNoLg.cgi?&z=InternetGatewayDevice.UserInterface.X_HW_WebUserInfo.2&RequestFile=login.asp');
+}
+
+Form.submit();
+}
+
+function BthRefresh()
+{
+document.getElementById("imgcode").src = 'getCheckCode.cgi?&rand=' + new Date().getTime();
+}
+
+function GetRandomNum(min, max)
+{
+    return Math.floor(Math.random() * (max-min) + min);
+}
+
+function CanvasDrawRandomLineAndPoint(canvasId, linesCount, maxLineLength, pointsCount)
+{
+var canvasImgCode = document.getElementById(canvasId);
+var width = canvasImgCode.width;
+    var height = canvasImgCode.height;
+
+var canvasContext = canvasImgCode.getContext("2d");
+canvasContext.clearRect(0,0,width,height);
+
+var arrayLineColor = new Array("#9ccc65", "#ffee58", "#d4e157", "#ffca28", "#ffab91", "#ffb74d", "#f48fb1", "#e1bee7");
+var lineColorCount = arrayLineColor.length;
+var arrayPointColor = new Array("#738ffe", "#9ccc65", "#ffee58", "#d4e157", "#ffca28", "#ffab91", "#ffb74d", "#673ab7", "#3f5165", "#9c27b0", "#e91e63");
+var pointColorCount = arrayPointColor.length;
+
+for(var i = 0; i < linesCount; i++){
+var x1 = GetRandomNum(0, width);
+var y1 = GetRandomNum(0, height);
+var x2 = GetRandomNum(0, width);
+var y2 = GetRandomNum(0, height);
+
+if ((x2 - x1) > maxLineLength){
+x2 = x1 + maxLineLength;
+}else if ((x2 - x1) < (-maxLineLength)){
+x2 = x1 - maxLineLength;
+}
+
+        canvasContext.beginPath();
+        canvasContext.moveTo(x1, y1);
+        canvasContext.lineTo(x2, y2);
+canvasContext.closePath();
+
+var grdl = canvasContext.createLinearGradient(x1, y1, x2, y2);
+grdl.addColorStop(0, arrayLineColor[GetRandomNum(0, lineColorCount - 1)]);
+grdl.addColorStop(Math.random(), arrayLineColor[GetRandomNum(0, lineColorCount - 2)]);
+grdl.addColorStop(1, arrayLineColor[GetRandomNum(0, lineColorCount - 2)]);
+
+canvasContext.lineWidth = 1;
+canvasContext.strokeStyle = grdl;
+        canvasContext.stroke();
+    }
+
+for(var i = 0; i < pointsCount; i++){
+        canvasContext.fillStyle = arrayPointColor[i % (pointColorCount - 1)];
+        canvasContext.beginPath();
+        canvasContext.arc(GetRandomNum(0, width), GetRandomNum(0, height), Math.random()+1, 0, Math.PI*2, true);
+canvasContext.closePath();
+        canvasContext.fill();
+    }
+}
+
+</script>
+</head>
+<body onLoad="LoadFrame();">
+<div id="base_mask" style=""></div>
+<div  id="pwd_modify" style="display:none;">
+<div>
+<li style="position: relative;top:10px; width: 500px;left: 100px; list-style-type: none; color: red; font-weight: bold; font-size: 14px;"><div>The login password is the default one. Change it immediately.</div></li>
+</div>
+
+<div >
+<ul style="position:absolute; clear:both; list-style-type: none; top:30px; left:-38px; height:15px; line-height:30px; font-weight: bold; font-size: 12px;">
+<li style="position: relative; top: 0px; width: 130px;" ><div align="right">Old Password:</div></li>
+<li style="position: relative; top: 10px; width: 130px;" ><div align="right">New Password:</div></li>
+<li style="position: relative; top: 20px; width: 130px;" ><div align="right">Confirm Password:</div></li>
+</ul>
+
+<ul style="color:#FFFFFF; position:absolute; top:30px; left:94px; height:15px; list-style-type:none; line-height:30px;">
+<li ><input name="old_password" id="old_password"    type="password" autocomplete="off" size="20" style="position: absolute; top: 5px; font-size:13px; width:180px;" /></li>
+<li ><input name="new_password" id="new_password"  type="password" autocomplete="off" size="20" style="position: absolute; top: 45px; font-size: 13px; width:180px; " /></li>
+<li ><input name="confirm_password" id="confirm_password" type="password" autocomplete="off" size="20" style="position: absolute; top: 85px; font-size:13px; width:180px;" /></li>
+</ul>
+
+<ul style="position:absolute; clear:both; list-style-type: none; top:30px; left:290px; height:15px; line-height:16px; font-size: 12px;">
+<li style="position: relative; top: 0px; width: 280px;" ><div align="left">1.The password must contain at least 6 characters.<br/>2.The password must contain at least two of the following combinations:Digit, uppercase letter, lowercase letter, Special characters (` ~ ! @ # $ % ^ & * ( ) - _ = + \\ | [ { } ] ; : ' \" < , . > / ?).<br/>3.The password cannot be any user name or user name in reverse order.</div></li>
+</ul>
+</div>
+<div id="modify_pwd_label" >
+<li style="position: relative;top:150px; width: 500px; list-style-type: none; color: red; font-weight: bold; font-size: 14px;"><div>Modify the wifi password</div></li>
+</div>
+<div id="modify_pwd_ssid1" >
+<ul style="position:absolute; clear:both; list-style-type: none; top:175px; left:-38px; height:15px; line-height:30px; font-weight: bold; font-size: 12px;">
+<li style="position: relative; top: 0px; width: 130px;" ><div id="ssid1_name_lebel" align="right"></div></li>
+<li style="position: relative; top: 0px; width: 130px;" ><div align="right">WiFi Password:</div></li>
+</ul>
+<ul style="color:#FFFFFF; position:absolute; top:175px; left:94px; height:15px; list-style-type:none; line-height:30px;">
+<li id="ssid1_name" style="position: absolute; top: 0px; font-size: 13px; width:180px; color: #000000; "></li>
+<li ><input name="ssid1_password" id="ssid1_password" type="password" autocomplete="off" size="20" style="position: absolute; top: 35px; font-size:13px; width:180px;" /></li>
+</ul>
+<ul style="position:absolute; clear:both; list-style-type: none; top:175px; left:290px; height:15px; line-height:20px; font-size: 12px;">
+<li style="position: relative; top: 35px; width: 280px;" ><div align="left">(8-63 characters or 64 hexadecimal characters)</div></li>
+</ul>
+
+</div>
+<div id="modify_pwd_ssid2" >
+<ul style="position:absolute; clear:both; list-style-type: none; top:235px; left:-38px; height:15px; line-height:30px; font-weight: bold; font-size: 12px;">
+<li style="position: relative; top: 0px; width: 130px;" ><div align="right">5G WiFi SSID:</div></li>
+<li style="position: relative; top: 0px; width: 130px;" ><div align="right">WiFi Password:</div></li>
+</ul>
+<ul style="color:#FFFFFF; position:absolute; top:235px; left:94px; height:15px; list-style-type:none; line-height:30px;">
+<li id="ssid2_name" style="position: absolute; top: 0px; font-size: 13px; width:180px; color: #000000; "></li>
+<li ><input name="ssid2_password" id="ssid2_password" type="password" autocomplete="off" size="20" style="position: absolute; top: 35px; font-size:13px; width:180px;" /></li>
+</ul>
+<ul style="position:absolute; clear:both; list-style-type: none; top:235px; left:290px; height:15px; line-height:20px; font-size: 12px;">
+<li style="position: relative; top: 35px; width: 280px;" ><div align="left">(8-63 characters or 64 hexadecimal characters)</div></li>
+</ul>
+</div>
+
+<div id="update" style="position: relative;">
+<div style="float: left; margin-top: 135px; margin-left: 180px;">
+<button id="button_update" style="width: 80px; height: 23px;" onclick="SubmitUpdate();" >Update</button>
+<div >&nbsp;</div>
+</div>
+</div>
+
+</div>
+
+<div id="main_wrapper">
+<div id="loginarea">
+<script>
+if(true == logo_singtel)
+{
+document.write('<div id="brandlog_singtel" style="display:none;"></div>');
+}
+else if (telmexwififeature == 1)
+{
+document.write('<div id="brandlog_telmex" style="display:none;"></div>');
+$("#brandlog_telmex").css("display", "block");
+$("#headerProductName").css("color","#56b2f8");
+var btn=document.getElementById('brandlog_telmex');
+btn.onclick=function(){window.location.href="http://www.telmex.com";};
+}
+else if ('TELECENTRO' == CfgMode.toUpperCase())
+{
+document.write('<div id="brandlog_telecentro" style="display:none;"></div>');
+}
+else if ('STCAP' == CfgMode.toUpperCase())
+{
+document.write('<div id="brandlog_stcap" style="display:none;"></div>');
+$("#brandlog_stcap").css("width", "144PX");
+}
+
+else if ('PLDT2' == CfgMode.toUpperCase() || 'PLDT' == CfgMode.toUpperCase())
+{
+document.write('<div id="brandlog_pldt" style="display:none;"></div>');
+}
+
+else if ('ANTEL2' == CfgMode.toUpperCase() || 'ANTEL' == CfgMode.toUpperCase())
+{
+document.write('<div id="brandlog_antel" style="display:none;"></div>');
+}
+
+else if ('MAROCTELECOM' == CfgMode.toUpperCase())
+{
+document.write('<div id="brandlog_maroctelecom" style="display:none;"></div>');
+}
+else if((DAUMFEATURE == 1) && (DAUMLOGO == 1))
+{
+document.write('<div id="brandlog_daum_dodo" style="display:none;"></div>');
+}
+else if ('ORANGEMT' == CfgMode.toUpperCase())
+{
+document.write('<div style="margin: 0 auto">' + '<div style="height: 8px"></div>'+'<img id="brandlog_orangemt" src="images/hwlogo_orangemt.gif" width="48px"></img>' + '<div  id="ProductNameOrg">' + ProductName + '</div>'+'</div>');
+}
+else if ('PARAGUAYPSN' == CfgMode.toUpperCase())
+{
+document.write('<div style="margin: 0 auto">' + '<div style="height: 8px"></div>'+'<img id="brandlog_paraguaypsn" src="images/hwlogo_paraguaypsn.gif" width="140px"></img>' + '<div  id="ProductNamePar">' + ProductName + '</div>'+'</div>');
+}
+else if((DAUMFEATURE == 1) && (DAUMLOGO == 2))
+{
+document.write('<div id="brandlog_daum_iprimus" style="display:none;"></div>');
+}
+else if ('DNZTELECOM2WIFI' == CfgMode.toUpperCase())
+{
+document.write('<div id="brandlog_dnztelecom" style="display:none;"></div>');
+}
+else if ('TM' == CfgMode.toUpperCase())
+{
+document.write('<div style="margin: 0 auto">' + '<div style="height: 40px"></div>'+'<img id="brandlog_tm" src="images/hwlogo_tm.gif" width="100px"></img>' + '<div id="ProductNameTm">' + ProductName + '</div>'+'</div>');
+}
+else if ('OMANONT' == CfgMode.toUpperCase() || 'OMANONT2' == CfgMode.toUpperCase())
+{
+document.write('<div id="brandlog_oman" style="display:none;"></div>');
+}
+else
+{
+document.write('<div id="brandlog" style="display:none;"></div>');
+}
+</script>    
+<script>
+if(true == logo_singtel)
+{
+document.write('<div id="ProductName" style="text-align:right; margin-left:630px;">' + ProductName + '</div>');
+}
+else if (('TM' !== CfgMode.toUpperCase()) && ('ORANGEMT' !== CfgMode.toUpperCase()) && ('PARAGUAYPSN' !== CfgMode.toUpperCase()))
+{
+document.write('<div id="ProductName">' + ProductName + '</div>');
+}
+</script>
+<script>
+if(true == mngttype)
+{
+document.write('<div id="welcomtext"><span class="welcometitle" id ="spanwelcomtext" BindText="frame004SONET"></span></div>');
+}
+else if(true == logo_singtel)
+{
+if(TypeWord_com == "COMMON")
+{
+document.write('<div id="welcomtext"><span class="welcometitle" id ="spanwelcomtext" BindText="frame004SINGTELHS"></span></div>');
+}
+else
+{
+document.write('<div id="welcomtext"><span class="welcometitle" id ="spanwelcomtext" BindText="frame004SINGTEL"></span></div>');
+}
+
+}
+
+else
+{
+if(smartlanfeature == 1)
+{
+if("" != curChangeMode && 0 != curChangeMode || apghnfeature == 1)
+{
+document.write('<div id="welcomtext"><span class="welcometitle" id ="spanwelcomtext" BindText="frame005lan"></span></div>');
+}
+else if(1 == IsSmartDev)
+{
+document.write('<div id="welcomtext"><span class="welcometitle" id ="spanwelcomtext" BindText="frame004lan"></span></div>');
+}else{
+document.write('<div id="welcomtext"><span class="welcometitle" id ="spanwelcomtext" BindText="frame005lan"></span></div>');
+}
+}
+else
+{
+if(ProductType == '2')
+{
+document.write('<div id="welcomtext"><span class="welcometitle" id ="spanwelcomtext" BindText="frame004telmex"></span></div>');
+}
+else
+{
+    document.write('<div id="welcomtext"><span class="welcometitle" id ="spanwelcomtext" BindText="frame004"></span></div>');
+}
+}
+}
+</script>
+<div id="logininfo">
+<div id="chooselag" class="changelanguageline" style="display:none;">
+<div class="changelanguageleft"></div>
+<div id="chooselagButton" class="changelanguageright"></div>
+</div>
+
+<div id="loginuser" class="contentItemlogin">
+<div class="labelBoxlogin">
+<span id="account" BindText="frame001"></span>
+<span id="accountstc" BindText="frame001stc" style="display:none;"></span>
+</div>
+<div class="contenboxlogin"><input type="text" id="txt_Username" name="txt_Username" class="logininputcss" /></div>
+</div>
+
+<div id="loginpwd" class="contentItemlogin">
+<div class="labelBoxlogin">
+<span id="Password" BindText="frame002"></span>
+<span id="Passwordstc" BindText="frame002stc" style="display:none;"></span>
+</div>
+<div class="contenboxlogin"><input type="password" autocomplete="off" id="txt_Password" name="txt_Password" class="logininputcss" autocomplete="off" /></div>
+</div>
+<table id="tablecheckcode" border="0" cellpadding="0" cellspacing="0" width="100%" style="display: none">
+<tr>
+<td height="8"></td>
+</tr>
+<tr>
+<td>
+<div class="labelBoxlogin" ><span id="Validate" BindText="frameValidate1"></span></div>
+<div id="imgCheckCode" >
+<img id="imgcode" >
+<canvas id="canvasDrawImgcode" width="150" height="35" ></canvas>
+</div>
+</td>
+</tr>
+</table>
+<script language="JavaScript" type="text/javascript">
+if ('TRUERG' == CfgMode.toUpperCase())
+{
+if ("1" == isLanAccess)
+{
+document.getElementById('tablecheckcode').style.display = '';
+document.getElementById("imgcode").src = 'getCheckCode.cgi?&rand=' + new Date().getTime();
+CanvasDrawRandomLineAndPoint("canvasDrawImgcode", GetRandomNum(3,5), 70, GetRandomNum(20,30));
+var browser=navigator.appName
+var b_version=navigator.appVersion 
+var version=b_version.split(";"); 
+var trim_Version=version[1].replace(/[ ]/g,""); 
+if(browser=="Microsoft Internet Explorer" && trim_Version=="MSIE8.0") 
+{ 
+document.getElementById('imgcode').style.marginLeft='0' 
+} 
+else if(browser=="Microsoft Internet Explorer" && trim_Version=="MSIE9.0") 
+{ 
+document.getElementById('imgcode').style.marginLeft='0'
+}
+}
+}
+</script>
+<div class="accordion" id="accordion_help">
+<div id="user_find" class="ember-view accordion-group">    
+<div class="accordion-heading marginright_35">       
+<div id="collapseinfo_1" class="text_center paddingright_15 index_page_font_color accordion-toggle text_underline">
+<span id="i18n-0" BindText="frame0161"></span>
+</div>     
+</div>    
+
+<div id="collapse_1" class="hide">       
+<div class="accordion-inner">         
+<div class="rounddiv getaccount_part">           
+<div class="bodydiv rounddiv paddingtop_8 getaccount_part_body index_page_font_color" align="center"> &nbsp;&nbsp;&nbsp;
+<span id="i18n-1" BindText="frame017"></span>
+</div>           
+<div class="bodydiv rounddiv getaccount_info paddingbottom_20" align="center">               
+<div class="index_page_font_color text_left">
+<span id="i18n-2" BindText="frame018"></span>
+</div>
+</div>            
+</div>         
+</div>      
+</div>     
+</div>
+<div id="user_restore" class="ember-view accordion-group margintop_15">    
+<div class="accordion-heading marginright_35">       
+<div id="collapseinfo_2" class="text_center paddingright_15 index_page_font_color accordion-toggle text_underline">
+<span id="i18n-3" BindText="frame019"></span>
+</div>     
+</div>     
+<div id="collapse_2" class="hide">       
+<div class="accordion-inner">         
+<div class="rounddiv getaccount_part">           
+<div class="bodydiv rounddiv paddingtop_8 getaccount_part_body index_page_font_color"> &nbsp;&nbsp;&nbsp;
+<span id="i18n-4" BindText="frame020"></span>           
+</div>
+<div class="getaccount_info rounddiv">             
+<div class="bodydiv rounddiv">           
+<div class="text_left index_page_font_color" BindText="frame021">
+
+</div>           
+<div class="text_left">
+<font color="#FF0000">
+<span id="i18n-5" BindText="frame022"></span>
+</font>
+</div>           
+</div>         
+</div>         
+</div>       
+</div>     
+</div>
+</div>
+</div>
+
+
+<div id="loginbuttondiv" class="contentItemlogin">
+<div class="labelBoxlogin"></div>
+<script type="text/javascript">
+if ('DNZTELECOM2WIFI' == CfgMode.toUpperCase())
+{
+document.write('<div class="contenboxlogin"><input type="button"  class="greenbuttonBlueBgcss buttonwidth_237px" id="loginbutton" onClick="LoginSubmit(this.id);" value="" BindText="frame003" /></div>');
+}
+else
+{
+document.write('<div class="contenboxlogin"><input type="button"  class="whitebuttonBlueBgcss buttonwidth_237px" id="loginbutton" onClick="LoginSubmit(this.id);" value="" BindText="frame003" /></div>');
+}
+</script>
+</div>
+<div id="DivErrPage" class="contentItemlogin">
+<div id="DivErrPagePlace" class="labelBoxlogin"></div>
+<div id="DivErrIconPlace" class="contenboxlogin"><div id="DivErrIcon"></div><div id="DivErrPromt"></div></div>
+</div>
+</div>
+</div>
+<div id="greenline"></div>
+<div id="copyright">
+<div id="copyrightspace"></div>
+<div id="copyrightlog" style="display:none;"></div>
+<script type="text/javascript">
+document.write('<div id="copyrighttext"><span id="footer" BindText="frame015a"></span></div>');
+</script>
+</div>
+
+</div>
+<script type="text/javascript">
+$(document).ready(function(){
+$('#i18n-0').click(function(){
+$('#collapse_2').css("display","none");
+$('#collapse_1').toggle('fast',function(){
+});
+});
+$('#i18n-3').click(function(){
+$('#collapse_1').css("display","none");
+$('#collapse_2').toggle('fast');
+});
+
+})
+</script>
+
+<script>
+ParseBindTextByTagName(framedesinfo, "span",  1);
+ParseBindTextByTagName(framedesinfo, "input", 2);
+genLanguageList();
+if(true != mngttype)
+{
+if(true == logo_singtel)
+{
+if(TypeWord_com == "COMMON")
+{
+ document.getElementById('brandlog_singtel').style.display = 'none';
+}
+else
+{
+ document.getElementById('brandlog_singtel').style.display = 'block';
+}
+}
+else if (telmexwififeature == 1)
+{
+$("#main_wrapper").css("background-image", "url(../images/loginbg_telmex.jpg)");
+$("#brandlog_telmex").css("width", "187px");
+$("#brandlog_telmex").css("height", "63px");
+$("#ProductName").css("line-height","54px");
+document.getElementById('brandlog_telmex').style.display = 'block';
+}
+else if ('TELECENTRO' == CfgMode.toUpperCase())
+{
+document.getElementById('brandlog_telecentro').style.display = 'block';
+}
+else if ('STCAP' == CfgMode.toUpperCase())
+{
+document.getElementById('brandlog_stcap').style.display = 'block';
+}
+else if ('PLDT2' == CfgMode.toUpperCase() || 'PLDT' == CfgMode.toUpperCase())
+{
+document.getElementById('brandlog_pldt').style.display = 'block';
+}
+else if ('ANTEL2' == CfgMode.toUpperCase() || 'ANTEL' == CfgMode.toUpperCase())
+{
+document.getElementById('brandlog_antel').style.display = 'block';
+$("#brandlog_antel").css("width", "92PX");
+$("#ProductName").css("line-height", "60PX");
+}
+else if('MAROCTELECOM' == CfgMode.toUpperCase())
+{
+document.getElementById('brandlog_maroctelecom').style.display = 'block';
+}
+else if((DAUMFEATURE == 1) && (DAUMLOGO == 1))
+{
+document.getElementById('brandlog_daum_dodo').style.display = 'block';
+}
+else if('ORANGEMT' == CfgMode.toUpperCase())
+{
+document.getElementById('brandlog_orangemt').style.display = 'block';
+}
+else if('PARAGUAYPSN' == CfgMode.toUpperCase())
+{
+document.getElementById('brandlog_paraguaypsn').style.display = 'block';
+}
+else if((DAUMFEATURE == 1) && (DAUMLOGO == 2))
+{
+document.getElementById('brandlog_daum_iprimus').style.display = 'block';
+}
+else if ('DNZTELECOM2WIFI' == CfgMode.toUpperCase())
+{
+$("#main_wrapper").css("background-image", "url()");
+$("#main_wrapper").css("background-color", "#ffffff");
+$("#ProductName").css("color","#00ad65");
+$("#ProductName").css("line-height","70px");
+$("#spanwelcomtext").css("color","#666666");
+$("#account").css("color","#666666");
+$("#Password").css("color","#666666");
+document.getElementById('brandlog_dnztelecom').style.display = 'block';
+$("#txt_Username").css("color","#666666");
+$("#txt_Username").css("border-color","#666666");
+$("#txt_Password").css("color","#666666");
+$("#txt_Password").css("border-color","#666666");
+}
+else if('TM' == CfgMode.toUpperCase())
+{
+document.getElementById('logininfo').style.marginTop = '70px';
+}
+else if('OMANONT' == CfgMode.toUpperCase() || 'OMANONT2' == CfgMode.toUpperCase())
+{
+document.getElementById('brandlog_oman').style.display = 'block';
+}
+else
+{
+    document.getElementById('brandlog').style.display = 'block';
+}
+
+if (('DZAIN2WIFI' == CfgMode.toUpperCase()) || 'ZAINAP' == CfgMode.toUpperCase())
+{
+$("#brandlog").css("background", "url(../images/hwlog_dzain.jpg) no-repeat center");
+}
+
+if(true == logo_singtel && TypeWord_com == "COMMON")
+{
+document.getElementById('copyrightlog').style.display = 'none';
+}
+else if ('DNZTELECOM2WIFI' == CfgMode.toUpperCase())
+{
+document.getElementById('copyrightlog').style.display = 'none';
+}
+else if (('DZAIN2WIFI' == CfgMode.toUpperCase()) || 'ZAINAP' == CfgMode.toUpperCase())
+{
+document.getElementById('copyrightlog').style.display = 'none';
+}
+else
+{
+document.getElementById('copyrightlog').style.display = 'block';
+}
+
+}
+</script>
+</body>
+</html>
+

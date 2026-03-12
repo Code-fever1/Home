@@ -1,58 +1,63 @@
-/**
- * Huawei HG8245W5 service tests.
- *
- * Test coverage:
- *   1. Router reachability — ECONNREFUSED → RouterError(offline)
- *   2. Login success — credentials accepted, cookie stored
- *   3. Device list retrieval — DHCP/ARP HTML parsed correctly
- *   4. Error handling — 401 response → RouterError(invalid_credentials)
- *   5. Timeout handling — ECONNABORTED → RouterError(timeout)
- */
-
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-import { getConnectedDevices, getMockDevicesResponse, RouterError } from '../huawei';
+import { getHuaweiDevices, RouterError } from '../huawei';
 
-// Stub config so requireEnv() never throws during tests.
 vi.mock('@/lib/config', () => ({
   routerConfig: {
-    huawei: { ip: 'http://100.10.10.1', username: 'admin', password: 'testpw', timeout: 5000 },
-  },
-  devicesConfig: {
-    huawei: { ip: 'http://100.10.10.1', username: 'admin', password: 'testpw', timeout: 5000 },
+    huawei: {
+      ip: 'http://100.10.10.1',
+      username: 'telecomadmin',
+      password: 'testpw',
+      timeout: 5000,
+    },
   },
 }));
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-/** Sample HTML that contains a DHCP table with two MAC/IP pairs. */
-const SAMPLE_DHCP_HTML = `
-<html><body>
-<table>
-  <tr><td>AA:BB:CC:DD:EE:01</td><td>192.168.1.10</td><td>MyLaptop</td><td>wireless</td></tr>
-  <tr><td>11:22:33:44:55:66</td><td>192.168.1.20</td><td>Desktop</td><td>ethernet</td></tr>
-</table>
-</body></html>
-`;
-
-// ---------------------------------------------------------------------------
-// Mock axios globally for this module
-// ---------------------------------------------------------------------------
-
-// We need to intercept the axios instance created inside huawei.ts.
-// Strategy: spy on axios.create to return a pre-wired mock instance.
 let mockAdapter: MockAdapter;
 let createdInstance: ReturnType<typeof axios.create>;
 
+const LOGIN_PAGE = '<html><body>login</body></html>';
+const WAITING_PAGE = `
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Waiting...</title>
+    <script>top.location.replace('/');</script>
+  </head>
+  <body></body>
+</html>
+`;
+
+const AUTH_INDEX_PAGE = `
+<html>
+  <head><title>Index</title></head>
+  <body>
+    <script>$.ajax({url : "asp/getMenuArray.asp"});</script>
+  </body>
+</html>
+`;
+
+const LAN_DEV_INFO = `
+function USERDevice(Domain,IpAddr,MacAddr,Port,IpType,DevType,DevStatus,PortType,Time,HostName,IPv4Enabled,IPv6Enabled,DeviceType,UserDevAlias,UserSpecifiedDeviceType,LeaseTimeRemaining){}
+var UserDevinfo = new Array(
+  new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.1","100\\x2e10\\x2e10\\x2e24","56\\x3a33\\x3abc\\x3a88\\x3a6d\\x3a7b","SSID5","DHCP","android\\x2ddhcp\\x2d13","Online","WIFI","16\\x3a30","Syed\\x2dAjwad\\x2dshah","1","1","0","","0","199584"),
+  new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.2","100\\x2e10\\x2e10\\x2e10","a0\\x3aa3\\x3af0\\x3a8e\\x3a5d\\x3aa2","LAN1","DHCP","","Online","ETH","99\\x3a27","","1","1","0","DLINK","5","160366"),
+  new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.3","100\\x2e10\\x2e10\\x2e78","a6\\x3a31\\x3a58\\x3a67\\x3a71\\x3ada","SSID5","DHCP","android\\x2ddhcp\\x2d16","Offline","WIFI","91\\x3a59","Phone","1","1","0","","0","0"),
+null);
+`;
+
+const DHCP_INFO = `
+function DHCPInfo(domain,name,ip,mac,remaintime,devtype,interfacetype,AddressSource){}
+var UserDhcpinfo = new Array(
+  new DHCPInfo("InternetGatewayDevice.LANDevice.1.Hosts.Host.5","Syed\\x2dAjwad\\x2dshah","100\\x2e10\\x2e10\\x2e24","56\\x3a33\\x3abc\\x3a88\\x3a6d\\x3a7b","199584","android\\x2ddhcp\\x2d13","802\\x2e11","DHCP"),
+  new DHCPInfo("InternetGatewayDevice.LANDevice.1.Hosts.Host.1","","100\\x2e10\\x2e10\\x2e10","a0\\x3aa3\\x3af0\\x3a8e\\x3a5d\\x3aa2","160366","","Ethernet","DHCP"),
+null);
+`;
+
 beforeEach(() => {
-  // Create a real axios instance and attach mock adapter to it.
   createdInstance = axios.create();
   mockAdapter = new MockAdapter(createdInstance, { onNoMatch: 'throwException' });
-
-  // Intercept axios.create so huawei.ts gets our mock instance.
   vi.spyOn(axios, 'create').mockReturnValue(createdInstance as ReturnType<typeof axios.create>);
 });
 
@@ -61,124 +66,67 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// ---------------------------------------------------------------------------
-// 1. Reachability
-// ---------------------------------------------------------------------------
+function mockHuaweiLoginSuccess() {
+  mockAdapter.onGet('/').reply(200, LOGIN_PAGE);
+  mockAdapter.onPost('/asp/GetRandCount.asp').reply(200, '\uFEFFdc8ae932c3a0c3696e8ceb03cd69a232');
+  mockAdapter.onPost('/login.cgi').reply(200, WAITING_PAGE);
+  mockAdapter.onGet('/index.asp').reply(200, AUTH_INDEX_PAGE);
+}
 
-describe('Router reachability', () => {
-  it('throws RouterError(offline) when router refuses connection', async () => {
-    mockAdapter.onPost('/').networkError(); // simulate ECONNREFUSED
-    // All login endpoints will also fail
-    mockAdapter.onPost('/login.html').networkError();
-    mockAdapter.onPost('/login.cgi').networkError();
+describe('Huawei router integration', () => {
+  it('returns RouterError(offline) when router is unreachable', async () => {
+    mockAdapter.onGet('/').networkError();
 
-    await expect(getConnectedDevices()).rejects.toSatisfy(
-      (e: RouterError) => e instanceof RouterError && e.kind === 'offline',
+    await expect(getHuaweiDevices()).rejects.toSatisfy(
+      (error: RouterError) => error instanceof RouterError && error.kind === 'offline'
     );
-  }, 10_000);
-});
+  });
 
-// ---------------------------------------------------------------------------
-// 2. Login success
-// ---------------------------------------------------------------------------
+  it('returns RouterError(invalid_credentials) when login does not create a session', async () => {
+    mockAdapter.onGet('/').reply(200, LOGIN_PAGE);
+    mockAdapter.onPost('/asp/GetRandCount.asp').reply(200, '\uFEFFdc8ae932c3a0c3696e8ceb03cd69a232');
+    mockAdapter.onPost('/login.cgi').reply(200, WAITING_PAGE);
+    mockAdapter.onGet('/index.asp').reply(200, WAITING_PAGE);
 
-describe('Login', () => {
-  it('succeeds when router returns 200 and body contains "logout"', async () => {
-    // Simulate a successful login page + a DHCP page with devices
-    mockAdapter.onPost('/').reply(200, '<html>Welcome admin <a href="logout">logout</a></html>');
-    mockAdapter.onGet('/html/bbsp/dhcp/dhcp.asp').reply(200, SAMPLE_DHCP_HTML);
-    // Status page (ignore failure gracefully)
-    mockAdapter.onGet(/.*/).reply(404, '');
+    await expect(getHuaweiDevices()).rejects.toSatisfy(
+      (error: RouterError) => error instanceof RouterError && error.kind === 'invalid_credentials'
+    );
+  });
 
-    const result = await getConnectedDevices();
+  it('fetches and parses connected devices from authenticated GetLanUser* endpoints', async () => {
+    mockHuaweiLoginSuccess();
+    mockAdapter.onGet('/html/bbsp/common/GetLanUserDevInfo.asp').reply(200, LAN_DEV_INFO);
+    mockAdapter.onGet('/html/bbsp/common/GetLanUserDhcpInfo.asp').reply(200, DHCP_INFO);
+
+    const result = await getHuaweiDevices();
+
     expect(result.source).toBe('live');
     expect(result.router).toBe('Huawei HG8245W5');
+    expect(result.deviceCount).toBe(2); // only Online entries are returned
+    expect(result.devices[0].ip).toBe('100.10.10.24');
+    expect(result.devices[0].mac).toBe('56:33:BC:88:6D:7B');
+    expect(result.devices[0].connection).toBe('wifi');
+    expect(result.devices[0].name).toBe('Syed-Ajwad-shah');
+    expect(result.devices[1].connection).toBe('ethernet');
   });
 
-  it('throws RouterError(invalid_credentials) on HTTP 401', async () => {
-    mockAdapter.onPost('/').reply(401, 'Unauthorized');
-    mockAdapter.onPost('/login.html').reply(401, 'Unauthorized');
-    mockAdapter.onPost('/login.cgi').reply(401, 'Unauthorized');
+  it('returns an empty list when router reports no connected users', async () => {
+    mockHuaweiLoginSuccess();
+    mockAdapter.onGet('/html/bbsp/common/GetLanUserDevInfo.asp').reply(200, 'var UserDevinfo = new Array(null);');
+    mockAdapter.onGet('/html/bbsp/common/GetLanUserDhcpInfo.asp').reply(200, 'var UserDhcpinfo = new Array(null);');
 
-    await expect(getConnectedDevices()).rejects.toSatisfy(
-      (e: RouterError) => e instanceof RouterError && e.kind === 'invalid_credentials',
+    const result = await getHuaweiDevices();
+    expect(result.deviceCount).toBe(0);
+    expect(result.devices).toEqual([]);
+  });
+
+  it('throws RouterError(parse_error) when LAN payload is not parseable', async () => {
+    mockHuaweiLoginSuccess();
+    mockAdapter.onGet('/html/bbsp/common/GetLanUserDevInfo.asp').reply(200, '<html>unexpected</html>');
+    mockAdapter.onGet('/GetLanUserDevInfo.asp').reply(404, '');
+
+    await expect(getHuaweiDevices()).rejects.toSatisfy(
+      (error: RouterError) => error instanceof RouterError && error.kind === 'parse_error'
     );
-  });
-});
-
-// ---------------------------------------------------------------------------
-// 3. Device list retrieval
-// ---------------------------------------------------------------------------
-
-describe('Device list retrieval', () => {
-  it('parses two devices from a DHCP ARP HTML table', async () => {
-    mockAdapter.onPost('/').reply(200, '<html>device list page <a href="logout">logout</a></html>');
-    mockAdapter.onGet('/html/bbsp/dhcp/dhcp.asp').reply(200, SAMPLE_DHCP_HTML);
-    mockAdapter.onGet(/.*/).reply(404, '');
-
-    const result = await getConnectedDevices();
-    // Should find AA:BB:CC:DD:EE:01 and 11:22:33:44:55:66
-    expect(result.devices.length).toBeGreaterThanOrEqual(2);
-    const macs = result.devices.map((d) => d.mac);
-    expect(macs).toContain('AA:BB:CC:DD:EE:01');
-    expect(macs).toContain('11:22:33:44:55:66');
-  });
-
-  it('returns empty devices array (not mock data) when no devices found', async () => {
-    mockAdapter.onPost('/').reply(200, '<html><a href="logout">logout</a></html>');
-    mockAdapter.onGet(/.*/).reply(200, '<html>no devices here</html>');
-
-    const result = await getConnectedDevices();
-    expect(result.devices).toBeInstanceOf(Array);
-    expect(result.source).toBe('live'); // always 'live', even when no devices
-  });
-});
-
-// ---------------------------------------------------------------------------
-// 4. Error handling
-// ---------------------------------------------------------------------------
-
-describe('Error handling', () => {
-  it('throws RouterError(invalid_credentials) when body contains "incorrect"', async () => {
-    mockAdapter.onPost('/').reply(200, '<html>Password incorrect</html>');
-    mockAdapter.onPost('/login.html').reply(200, '<html>Password incorrect</html>');
-    mockAdapter.onPost('/login.cgi').reply(200, '<html>Password incorrect</html>');
-
-    await expect(getConnectedDevices()).rejects.toSatisfy(
-      (e: RouterError) => e instanceof RouterError,
-    );
-  });
-});
-
-// ---------------------------------------------------------------------------
-// 5. Timeout handling
-// ---------------------------------------------------------------------------
-
-describe('Timeout handling', () => {
-  it('throws RouterError(timeout) when connection aborts', async () => {
-    mockAdapter.onPost('/').timeout();
-    mockAdapter.onPost('/login.html').timeout();
-    mockAdapter.onPost('/login.cgi').timeout();
-
-    await expect(getConnectedDevices()).rejects.toSatisfy(
-      (e: RouterError) => e instanceof RouterError && e.kind === 'timeout',
-    );
-  });
-});
-
-// ---------------------------------------------------------------------------
-// 6. Mock fixture integrity (for test use only)
-// ---------------------------------------------------------------------------
-
-describe('getMockDevicesResponse (fixture)', () => {
-  it('returns a structurally valid fixture', () => {
-    const mock = getMockDevicesResponse();
-    expect(mock.router).toBe('Huawei HG8245W5');
-    expect(mock.devices.length).toBeGreaterThan(0);
-    for (const d of mock.devices) {
-      expect(d).toHaveProperty('mac');
-      expect(d).toHaveProperty('ip');
-      expect(d).toHaveProperty('connection');
-    }
   });
 });

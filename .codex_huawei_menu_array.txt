@@ -1,0 +1,101 @@
+﻿ [{ name: "Home Page", id: "MainPage", deficon: "images/mainpagedef.jpg", clickicon: "images/mainpagepress.jpg", url: "CustomApp/mainpage.asp" },
+{ name: "One-ClickÂ Diagnosis", id: "OntCheck", deficon: "images/checkdef.jpg", clickicon: "images/checkpress.jpg", url: "html/ssmp/maintain/smartdiagnose.asp" },
+{ name: "System Information", id: "Systeminfo", deficon: "images/systemdef.jpg", clickicon: "images/systempress.jpg", url: "html/ssmp/deviceinfo/deviceinfo.asp" , subMenus: [
+{ name: "Device", id: "deviceinfo", deficon: "", clickicon: "", url: "html/ssmp/deviceinfo/deviceinfo.asp" },
+{ name: "WAN", id: "waninfo", deficon: "", clickicon: "", url: "html/bbsp/waninfo/waninfo.asp" },
+{ name: "Optical", id: "opticinfo", deficon: "", clickicon: "", url: "html/amp/opticinfo/opticinfo.asp" },
+{ name: "Service Provisioning Status", id: "bssinfo", deficon: "", clickicon: "", url: "html/ssmp/bss/bssinfo.asp" },
+{ name: "VoIP", id: "voipinfo", deficon: "", clickicon: "", url: "html/voip/status/voipmaintain.asp" },
+{ name: "Eth Port", id: "ethinfo", deficon: "", clickicon: "", url: "html/amp/ethinfo/ethinfo.asp" },
+{ name: "WLAN", id: "wlaninfo", deficon: "", clickicon: "", url: "html/amp/wlaninfo/wlaninfo.asp" },
+{ name: "Home Network", id: "wlancoverinfo", deficon: "", clickicon: "", url: "html/amp/wificoverinfo/wlancoverinfo.asp" }
+] },
+{ name: "Advanced", id: "addconfig", deficon: "images/addvdef.jpg", clickicon: "images/addvpress.jpg", url: "html/bbsp/wan/wan.asp" , subMenus: [
+{ name: "WAN", id: "wanconfig", deficon: "", clickicon: "", url: "html/bbsp/wan/wan.asp" },
+{ name: "LAN", id: "lanconfig", deficon: "", clickicon: "", url: "html/bbsp/layer3/layer3.asp" , subMenus: [
+{ name: "Layer 2/3 Port", id: "lanportconfig", deficon: "", clickicon: "", url: "html/bbsp/layer3/layer3.asp" },
+{ name: "LAN Host", id: "lanhostconfig", deficon: "", clickicon: "", url: "html/bbsp/dhcp/dhcp.asp" },
+{ name: "DHCP Server", id: "landhcp", deficon: "", clickicon: "", url: "html/bbsp/dhcpservercfg/dhcp2.asp" },
+{ name: "DHCP Static IP", id: "landhcpstatic", deficon: "", clickicon: "", url: "html/bbsp/dhcpstatic/dhcpstatic.asp" },
+{ name: "DHCPv6 Server", id: "landhcpv6", deficon: "", clickicon: "", url: "html/bbsp/lanaddress/lanaddress.asp" },
+{ name: "DHCPv6 Static IP", id: "landhcpv6static", deficon: "", clickicon: "", url: "html/bbsp/dhcpstaticaddr/dhcpstaticaddress.asp" },
+{ name: "DHCPv6 Information", id: "landhcpv6info", deficon: "", clickicon: "", url: "html/bbsp/dhcpv6info/dhcpv6info.asp" },
+{ name: "Port Locating", id: "option82", deficon: "", clickicon: "", url: "html/bbsp/dhcp/option82.asp" }
+] },
+{ name: "Security", id: "securityconfig", deficon: "", clickicon: "", url: "html/bbsp/firewalllevel/firewalllevel.asp" , subMenus: [
+{ name: "Firewall Level", id: "ipv4firewalllevel", deficon: "", clickicon: "", url: "html/bbsp/firewalllevel/firewalllevel.asp" },
+{ name: "IPv4 Filtering", id: "ipincoming", deficon: "", clickicon: "", url: "html/bbsp/ipincoming/ipincoming.asp" },
+{ name: "MAC Filtering", id: "macfilter", deficon: "", clickicon: "", url: "html/bbsp/macfilter/macfilter.asp" },
+{ name: "Wi-Fi MAC Filtering", id: "wlanmacfilter", deficon: "", clickicon: "", url: "html/bbsp/wlanmacfilter/wlanmacfilter.asp" },
+{ name: "Parental Control", id: "parentalctrl", deficon: "", clickicon: "", url: "html/bbsp/parentalctrl/parentalctrlstatus.asp" },
+{ name: "DoS Configuration", id: "dos", deficon: "", clickicon: "", url: "html/bbsp/Dos/Dos.asp" },
+{ name: "Precise Device Access Control", id: "portacl", deficon: "", clickicon: "", url: "html/bbsp/portacl/newacl.asp" }
+] },
+{ name: "Route", id: "routeconfig", deficon: "", clickicon: "", url: "html/bbsp/route/route.asp" , subMenus: [
+{ name: "Default IPv4 Route", id: "ipv4defaultroute", deficon: "", clickicon: "", url: "html/bbsp/route/route.asp" },
+{ name: "IPv4 Static Route", id: "ipv4staticroute", deficon: "", clickicon: "", url: "html/bbsp/staticroute/staticroute.asp" },
+{ name: "IPv4 Dynamic Route", id: "ipv4dynamicroute", deficon: "", clickicon: "", url: "html/bbsp/dynamicroute/dynamicroute.asp" },
+{ name: "IPv4 VLAN Binding", id: "ipv4vlanbind", deficon: "", clickicon: "", url: "html/bbsp/vlanctc/vlanctc.asp" },
+{ name: "IPv4 Service Route", id: "ipv4serviceroute", deficon: "", clickicon: "", url: "html/bbsp/serviceroute/serviceroute.asp" },
+{ name: "IPv4 Routing Table", id: "ipv4routeinfo", deficon: "", clickicon: "", url: "html/bbsp/routeinfo/routeinfo.asp" },
+{ name: "Default IPv6 Route", id: "ipv6defaultroute", deficon: "", clickicon: "", url: "html/bbsp/ipv6defaultroute/defaultroute.asp" },
+{ name: "IPv6 Static Route", id: "ipv6staticroute", deficon: "", clickicon: "", url: "html/bbsp/ipv6staticroute/ipv6staticroute.asp" }
+] },
+{ name: "Forward Rules", id: "forwardrules", deficon: "", clickicon: "", url: "html/bbsp/dmz/dmz.asp" , subMenus: [
+{ name: "DMZ Function", id: "dmz", deficon: "", clickicon: "", url: "html/bbsp/dmz/dmz.asp" },
+{ name: "IPv4 Port Mapping", id: "portmapping", deficon: "", clickicon: "", url: "html/bbsp/portmapping/portmapping.asp" },
+{ name: "Port Trigger", id: "porttrigger", deficon: "", clickicon: "", url: "html/bbsp/porttrigger/porttrigger.asp" }
+] },
+{ name: "Application", id: "application", deficon: "", clickicon: "", url: "html/ssmp/usbftp/usbhost.asp" , subMenus: [
+{ name: "USB Application", id: "usbapplication", deficon: "", clickicon: "", url: "html/ssmp/usbftp/usbhost.asp" },
+{ name: "Time Setting", id: "sntpmngt", deficon: "", clickicon: "", url: "html/ssmp/sntp/sntp.asp" },
+{ name: "Media Sharing", id: "dlnashare", deficon: "", clickicon: "", url: "html/ssmp/dlna/dlna.asp" },
+{ name: "ALG", id: "alg", deficon: "", clickicon: "", url: "html/bbsp/alg/alg.asp" },
+{ name: "DDNS", id: "ddns", deficon: "", clickicon: "", url: "html/bbsp/ddns/ddns.asp" },
+{ name: "UPnP", id: "upnp", deficon: "", clickicon: "", url: "html/bbsp/upnp/upnp.asp" },
+{ name: "IGMP", id: "igmp", deficon: "", clickicon: "", url: "html/bbsp/igmp/igmp.asp" },
+{ name: "Intelligent Channel", id: "qossmart", deficon: "", clickicon: "", url: "html/bbsp/qossmart/qossmart.asp" },
+{ name: "Video Device Identification", id: "video", deficon: "", clickicon: "", url: "html/bbsp/video/video.asp" },
+{ name: "ARP Ping", id: "arp", deficon: "", clickicon: "", url: "html/bbsp/arpping/arpping.asp" },
+{ name: "Static DNS", id: "dnsconfiguration", deficon: "", clickicon: "", url: "html/bbsp/dnsconfiguration/dnsconfigcommon.asp" },
+{ name: "DSCP-to-Pbit Mapping", id: "DSCPMapping", deficon: "", clickicon: "", url: "html/bbsp/dscptopbit/dscptopbit.asp" },
+{ name: "LAN Port Multi-service", id: "lanservicecfg", deficon: "", clickicon: "", url: "html/bbsp/lanservicecfg/lanservicecfg.asp" }
+] },
+{ name: "WLAN", id: "wlanconfig", deficon: "", clickicon: "", url: "html/amp/wlanbasic/WlanBasic.asp?2G" , subMenus: [
+{ name: "2.4G Basic Network Settings", id: "wlan2basic", deficon: "", clickicon: "", url: "html/amp/wlanbasic/WlanBasic.asp?2G" },
+{ name: "2.4G Advanced Network Settings", id: "wlan2adv", deficon: "", clickicon: "", url: "html/amp/wlanadv/WlanAdvance.asp?2G" },
+{ name: "5G Basic Network Settings", id: "wlan5basic", deficon: "", clickicon: "", url: "html/amp/wlanbasic/WlanBasic.asp?5G" },
+{ name: "5G Advanced Network Settings", id: "wlan5adv", deficon: "", clickicon: "", url: "html/amp/wlanadv/WlanAdvance.asp?5G" },
+{ name: "Automatic Wi-Fi Shutdown", id: "wlanschedule", deficon: "", clickicon: "", url: "html/amp/wifische/WlanSchedule.asp" },
+{ name: "Wi-Fi Coverage", id: "wificover", deficon: "", clickicon: "", url: "html/amp/wificovercfg/wifiCover.asp" }
+] },
+{ name: "Voice", id: "voip", deficon: "", clickicon: "", url: "html/voip/voipinterface/voipinterface.asp" , subMenus: [
+{ name: "VoIP Basic", id: "voipinterface", deficon: "", clickicon: "", url: "html/voip/voipinterface/voipinterface.asp" },
+{ name: "VoIP Advanced", id: "voipuser", deficon: "", clickicon: "", url: "html/voip/voipuser/voipuser.asp" },
+{ name: "SIP/H.248 Conversion", id: "changeprotocol", deficon: "", clickicon: "", url: "html/voip/changeprotocol/voipchangeprotocol.asp" }
+] },
+{ name: "System Management", id: "systool", deficon: "", clickicon: "", url: "html/ssmp/tr069/tr069.asp" , subMenus: [
+{ name: "TR-069", id: "tr069config", deficon: "", clickicon: "", url: "html/ssmp/tr069/tr069.asp" },
+{ name: "Account Management", id: "userconfig", deficon: "", clickicon: "", url: "html/ssmp/accoutcfg/accountadmin.asp" },
+{ name: "Open Source Software Notice", id: "noticeinfo", deficon: "", clickicon: "", url: "html/ssmp/softnotice/opensfnotice.asp" },
+{ name: "ONT Authentication", id: "passwordcommon", deficon: "", clickicon: "", url: "html/amp/ontauth/passwordcommon.asp" }
+] },
+{ name: "Maintenance Diagnosis", id: "maintaininfo", deficon: "", clickicon: "", url: "html/ssmp/fireware/firmware.asp" , subMenus: [
+{ name: "Software Upgrade", id: "fireware", deficon: "", clickicon: "", url: "html/ssmp/fireware/firmware.asp" },
+{ name: "Configuration File Management", id: "cfgconfig", deficon: "", clickicon: "", url: "html/ssmp/cfgfile/cfgfile.asp" },
+{ name: "Upstream Port", id: "upportconfig", deficon: "", clickicon: "", url: "html/ssmp/mainupportcfg/mainupportconfig.asp" },
+{ name: "Maintenance", id: "maintainconfig", deficon: "", clickicon: "", url: "html/bbsp/maintenance/diagnosecommon.asp" },
+{ name: "User Log", id: "userlog", deficon: "", clickicon: "", url: "html/ssmp/userlog/logview.asp" },
+{ name: "Firewall Log", id: "firewalllog", deficon: "", clickicon: "", url: "html/bbsp/firewalllog/firewalllogview.asp" },
+{ name: "Debug Log", id: "debuglog", deficon: "", clickicon: "", url: "html/ssmp/debuglog/debuglogview.asp" },
+{ name: "Intelligent Channel Statistics", id: "qossmartstatistics", deficon: "", clickicon: "", url: "html/bbsp/qossmartstatistics/qossmartstatistics.asp" },
+{ name: "Fault Info Collection", id: "collectconfig", deficon: "", clickicon: "", url: "html/ssmp/collect/collectInfo.asp" },
+{ name: "Remote Mirror", id: "remotepktmirror", deficon: "", clickicon: "", url: "html/bbsp/remotepktmirror/remotepktmirror.asp" },
+{ name: "Home Network Speedtest", id: "testspeed", deficon: "", clickicon: "", url: "html/ssmp/testspeed/testspeed.asp" },
+{ name: "Segment Speedtest", id: "sectionspeed", deficon: "", clickicon: "", url: "html/ssmp/Sectionspeed/Sectionspeed.asp" },
+{ name: "Indicator Status Management", id: "indicator", deficon: "", clickicon: "", url: "html/ssmp/ledcfg/ledcfg.asp" },
+{ name: "VoIP Statistics", id: "voipstatistic", deficon: "", clickicon: "", url: "html/voip/statistic/voipstatistic.asp" },
+{ name: "VoIP Diagnosis", id: "", deficon: "", clickicon: "", url: "html/voip/diagnose/voipdiagnose.asp" }
+] }
+] }
+];

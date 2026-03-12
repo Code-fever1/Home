@@ -1,0 +1,40 @@
+﻿function IsBridgeAddressSource(IPAddressSource)
+{
+if(("Static"==IPAddressSource)||("DHCP"==IPAddressSource))
+{
+return false;
+}
+return true;
+}
+
+function DHCPInfo(domain,name,ip,mac,remaintime,devtype, interfacetype,AddressSource)
+{
+var IsBridgeFlag = IsBridgeAddressSource(AddressSource);
+
+if(IsBridgeFlag)
+{
+this.devtype    = "--";
+this.ip = "--";
+}
+else
+{
+this.devtype    = devtype;
+this.ip = ip;
+}
+
+this.domain= domain;
+this.name = name;
+this.mac        = mac;
+this.remaintime= remaintime;
+this.interfacetype = interfacetype;
+this.AddressSource = AddressSource;
+}
+
+var UserDhcpinfo = new Array(new DHCPInfo("InternetGatewayDevice.LANDevice.1.Hosts.Host.1","","100\x2e10\x2e10\x2e10","a0\x3aa3\x3af0\x3a8e\x3a5d\x3aa2","160366","","Ethernet","DHCP"),new DHCPInfo("InternetGatewayDevice.LANDevice.1.Hosts.Host.2","Tenda","100\x2e10\x2e10\x2e3","cc\x3a2d\x3a21\x3a5b\x3a77\x3a00","199668","MSFT\x205\x2e0","Ethernet","DHCP"),new DHCPInfo("InternetGatewayDevice.LANDevice.1.Hosts.Host.3","","100\x2e10\x2e10\x2e4","c8\x3a3a\x3a35\x3a0d\x3a96\x3ad0","241957","MSFT\x205\x2e0","Ethernet","DHCP"),new DHCPInfo("InternetGatewayDevice.LANDevice.1.Hosts.Host.4","","100\x2e10\x2e10\x2e2","08\x3aa1\x3a89\x3a17\x3a4c\x3a6f","0","","Ethernet","Static"),new DHCPInfo("InternetGatewayDevice.LANDevice.1.Hosts.Host.5","Syed\x2dAjwad\x2dshah","100\x2e10\x2e10\x2e24","56\x3a33\x3abc\x3a88\x3a6d\x3a7b","199584","android\x2ddhcp\x2d13","802\x2e11","DHCP"),new DHCPInfo("InternetGatewayDevice.LANDevice.1.Hosts.Host.6","","100\x2e10\x2e10\x2e7","96\x3ada\x3a36\x3a63\x3afe\x3acd","0","","802\x2e11","Static"),new DHCPInfo("InternetGatewayDevice.LANDevice.1.Hosts.Host.7","","100\x2e10\x2e10\x2e43","8e\x3ac2\x3ad9\x3aeb\x3a02\x3a70","23223","","802\x2e11","DHCP"),new DHCPInfo("InternetGatewayDevice.LANDevice.1.Hosts.Host.8","V2433","100\x2e10\x2e10\x2e85","4e\x3aaa\x3a2f\x3ab3\x3a01\x3a22","5075","android\x2ddhcp\x2d15","802\x2e11","DHCP"),new DHCPInfo("InternetGatewayDevice.LANDevice.1.Hosts.Host.9","Galaxy\x2dS8","100\x2e10\x2e10\x2e31","30\x3a07\x3a4d\x3aa1\x3aa4\x3a76","27760","android\x2ddhcp\x2d9","802\x2e11","DHCP"),new DHCPInfo("InternetGatewayDevice.LANDevice.1.Hosts.Host.10","OPPO\x2dA15s","100\x2e10\x2e10\x2e90","2e\x3a85\x3a8c\x3a42\x3ab6\x3a40","91159","android\x2ddhcp\x2d10","802\x2e11","DHCP"),new DHCPInfo("InternetGatewayDevice.LANDevice.1.Hosts.Host.11","","100\x2e10\x2e10\x2e5","7a\x3aad\x3a1c\x3a0d\x3a77\x3a60","0","","802\x2e11","Static"),null);
+
+function GetUserDhcpInfoList()
+{
+return UserDhcpinfo;
+}
+
+GetUserDhcpInfoList();

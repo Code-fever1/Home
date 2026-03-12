@@ -65,6 +65,7 @@ const { getNetworkTopology } = await import('../aggregator');
 function makeHuaweiResponse(deviceCount = 2) {
   return {
     router: 'Huawei HG8245W5',
+    routerIP: '100.10.10.1',
     deviceCount,
     devices: Array.from({ length: deviceCount }, (_, i) => ({
       name: `Device-${i}`, ip: `192.168.1.${10 + i}`,

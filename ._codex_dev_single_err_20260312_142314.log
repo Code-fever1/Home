@@ -1,0 +1,10 @@
+(node:1944) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[huawei] login error details: code=ECONNRESET status=n/a message=socket hang up
+[api/huawei/devices] error: offline Router is unreachable
+[huawei] verify router session retry 1/3 after ECONNRESET
+[huawei] login error details: code=n/a status=n/a message=Router login did not establish an authenticated session
+[api/huawei/devices] error: invalid_credentials Router login did not establish an authenticated session
+[huawei] verify router session retry 1/3 after ECONNRESET
+[huawei] login error details: code=n/a status=n/a message=Router login did not establish an authenticated session
+[api/huawei/devices] error: invalid_credentials Router login did not establish an authenticated session

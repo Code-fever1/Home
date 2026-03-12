@@ -1,0 +1,152 @@
+﻿ï»¿function USERDevice(Domain,IpAddr,MacAddr,Port,IpType,DevType,DevStatus,PortType,Time,HostName,IPv4Enabled,IPv6Enabled,DeviceType,UserDevAlias,UserSpecifiedDeviceType,LeaseTimeRemaining)
+{
+this.Domain = Domain;
+this.IpAddr    = (IpAddr.length == 0)?"--":IpAddr;
+this.MacAddr= MacAddr;
+
+if(Port=="LAN0" || Port=="SSID0")
+{
+this.Port  = "--"; 
+}
+else
+{
+this.Port  = Port;
+}
+
+this.PortID = Port; 
+
+this.PortType= PortType;
+
+this.DevStatus = DevStatus;
+this.IpType= IpType;
+if(IpType=="Static")
+{
+  this.DevType="--";
+}
+else
+{
+if(DevType=="")
+{
+this.DevType= "--";
+}
+else
+{
+this.DevType= DevType;
+}
+}
+this.Time    = Time;
+
+if(HostName=="")
+{
+this.HostName= "--";
+}
+else
+{
+   this.HostName= HostName;
+}
+
+this.IPv4Enabled = IPv4Enabled;
+this.IPv6Enabled = IPv6Enabled;
+this.DeviceType = DeviceType;
+if (UserDevAlias == "")
+{
+this.UserDevAlias = "--";
+}
+else
+{
+this.UserDevAlias = UserDevAlias;
+}
+this.UserSpecifiedDeviceType = UserSpecifiedDeviceType;
+this.LeaseTimeRemaining = LeaseTimeRemaining;
+this.instid       = '';
+this.IsClickDev   = false;
+}
+
+var ProductType = '1';
+if (ProductType != '2')
+{
+var UserDevinfo = new Array(new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.1","100\x2e10\x2e10\x2e10","a0\x3aa3\x3af0\x3a8e\x3a5d\x3aa2","LAN1","DHCP","","Online","ETH","99\x3a27","","1","1","0","DLINK","5","160366"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.2","100\x2e10\x2e10\x2e3","cc\x3a2d\x3a21\x3a5b\x3a77\x3a00","LAN3","DHCP","MSFT\x205\x2e0","Online","ETH","16\x3a32","Tenda","1","0","0","","0","199668"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.3","100\x2e10\x2e10\x2e4","c8\x3a3a\x3a35\x3a0d\x3a96\x3ad0","LAN4","DHCP","MSFT\x205\x2e0","Online","ETH","4\x3a47","","1","0","0","Tenda\x204\x2e0","5","241957"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.4","100\x2e10\x2e10\x2e2","08\x3aa1\x3a89\x3a17\x3a4c\x3a6f","LAN2","Static","\x2d\x2d","Online","ETH","99\x3a26","","1","1","0","CAMERA","5","0"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.6","100\x2e10\x2e10\x2e24","56\x3a33\x3abc\x3a88\x3a6d\x3a7b","SSID5","DHCP","android\x2ddhcp\x2d13","Offline","WIFI","16\x3a30","Syed\x2dAjwad\x2dshah","1","1","0","","0","199584"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.7","100\x2e10\x2e10\x2e7","96\x3ada\x3a36\x3a63\x3afe\x3acd","SSID5","Static","\x2d\x2d","Offline","WIFI","16\x3a57","","1","1","0","","0","0"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.8","100\x2e10\x2e10\x2e6","e2\x3ac9\x3a05\x3aa2\x3a39\x3aa1","SSID5","DHCP","android\x2ddhcp\x2d15","Offline","WIFI","77\x3a9","TECNO\x2dSPARK\x2dGo\x2d2","1","1","0","","0","0"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.9","100\x2e10\x2e10\x2e78","a6\x3a31\x3a58\x3a67\x3a71\x3ada","SSID5","DHCP","android\x2ddhcp\x2d16","Offline","WIFI","91\x3a59","SYED\x2ds\x2dA55","1","1","0","","0","0"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.10","100\x2e10\x2e10\x2e43","8e\x3ac2\x3ad9\x3aeb\x3a02\x3a70","SSID5","DHCP","","Offline","WIFI","65\x3a26","","1","1","0","","0","23223"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.11","100\x2e10\x2e10\x2e85","4e\x3aaa\x3a2f\x3ab3\x3a01\x3a22","SSID5","DHCP","android\x2ddhcp\x2d15","Offline","WIFI","70\x3a35","V2433","1","1","0","","0","5075"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.12","100\x2e10\x2e10\x2e31","30\x3a07\x3a4d\x3aa1\x3aa4\x3a76","SSID5","DHCP","android\x2ddhcp\x2d9","Offline","WIFI","64\x3a11","Galaxy\x2dS8","1","1","0","","0","27760"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.13","100\x2e10\x2e10\x2e90","2e\x3a85\x3a8c\x3a42\x3ab6\x3a40","SSID5","DHCP","android\x2ddhcp\x2d10","Offline","WIFI","46\x3a40","OPPO\x2dA15s","1","1","0","","0","91159"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.14","100\x2e10\x2e10\x2e5","7a\x3aad\x3a1c\x3a0d\x3a77\x3a60","SSID5","Static","\x2d\x2d","Offline","WIFI","40\x3a23","","1","1","0","","0","0"),null);
+}
+else
+{
+var UserDevinfo = new Array(new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.1","100\x2e10\x2e10\x2e10","a0\x3aa3\x3af0\x3a8e\x3a5d\x3aa2","LAN1","DHCP","","Online","ETH","99\x3a27","","1","1","0","DLINK","5","160366"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.2","100\x2e10\x2e10\x2e3","cc\x3a2d\x3a21\x3a5b\x3a77\x3a00","LAN3","DHCP","MSFT\x205\x2e0","Online","ETH","16\x3a32","Tenda","1","0","0","","0","199668"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.3","100\x2e10\x2e10\x2e4","c8\x3a3a\x3a35\x3a0d\x3a96\x3ad0","LAN4","DHCP","MSFT\x205\x2e0","Online","ETH","4\x3a47","","1","0","0","Tenda\x204\x2e0","5","241957"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.4","100\x2e10\x2e10\x2e2","08\x3aa1\x3a89\x3a17\x3a4c\x3a6f","LAN2","Static","\x2d\x2d","Online","ETH","99\x3a26","","1","1","0","CAMERA","5","0"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.6","100\x2e10\x2e10\x2e24","56\x3a33\x3abc\x3a88\x3a6d\x3a7b","SSID5","DHCP","android\x2ddhcp\x2d13","Offline","WIFI","16\x3a30","Syed\x2dAjwad\x2dshah","1","1","0","","0","199584"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.7","100\x2e10\x2e10\x2e7","96\x3ada\x3a36\x3a63\x3afe\x3acd","SSID5","Static","\x2d\x2d","Offline","WIFI","16\x3a57","","1","1","0","","0","0"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.8","100\x2e10\x2e10\x2e6","e2\x3ac9\x3a05\x3aa2\x3a39\x3aa1","SSID5","DHCP","android\x2ddhcp\x2d15","Offline","WIFI","77\x3a9","TECNO\x2dSPARK\x2dGo\x2d2","1","1","0","","0","0"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.9","100\x2e10\x2e10\x2e78","a6\x3a31\x3a58\x3a67\x3a71\x3ada","SSID5","DHCP","android\x2ddhcp\x2d16","Offline","WIFI","91\x3a59","SYED\x2ds\x2dA55","1","1","0","","0","0"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.10","100\x2e10\x2e10\x2e43","8e\x3ac2\x3ad9\x3aeb\x3a02\x3a70","SSID5","DHCP","","Offline","WIFI","65\x3a26","","1","1","0","","0","23223"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.11","100\x2e10\x2e10\x2e85","4e\x3aaa\x3a2f\x3ab3\x3a01\x3a22","SSID5","DHCP","android\x2ddhcp\x2d15","Offline","WIFI","70\x3a35","V2433","1","1","0","","0","5075"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.12","100\x2e10\x2e10\x2e31","30\x3a07\x3a4d\x3aa1\x3aa4\x3a76","SSID5","DHCP","android\x2ddhcp\x2d9","Offline","WIFI","64\x3a11","Galaxy\x2dS8","1","1","0","","0","27760"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.13","100\x2e10\x2e10\x2e90","2e\x3a85\x3a8c\x3a42\x3ab6\x3a40","SSID5","DHCP","android\x2ddhcp\x2d10","Offline","WIFI","46\x3a40","OPPO\x2dA15s","1","1","0","","0","91159"),new USERDevice("InternetGatewayDevice.LANDevice.1.X_HW_UserDev.14","100\x2e10\x2e10\x2e5","7a\x3aad\x3a1c\x3a0d\x3a77\x3a60","SSID5","Static","\x2d\x2d","Offline","WIFI","40\x3a23","","1","1","0","","0","0"),null);
+}
+
+
+function stWifiWorkingMode(domain,WifiMode,IPAddress,MacAddress)
+{
+this.domain = domain;
+this.WifiMode = WifiMode;
+this.IPAddress= IPAddress;
+this.MacAddress     = MacAddress;
+}
+
+var WifiWorkingModes = new Array(null);
+var curCfgModeWord ='OMANONT2'; 
+
+if (curCfgModeWord == "TALKTALK2WIFI")
+{
+for(var i = 0; i < UserDevinfo.length - 1; i++)
+{var MACmacthFlag = 0; 
+if (UserDevinfo[i].DevStatus.toUpperCase() == "OFFLINE")
+{
+UserDevinfo[i].Port = "--";
+continue;
+}
+
+if(UserDevinfo[i].PortType != "WIFI")
+{
+UserDevinfo[i].Port = "Ethernet";
+continue;
+}
+
+
+for(var j = 0;j < WifiWorkingModes.length - 1 ; j++)
+{ 
+if (UserDevinfo[i].MacAddr.toString().toUpperCase() ==  WifiWorkingModes[j].MacAddress.toString().toUpperCase())
+{
+UserDevinfo[i].Port = WifiWorkingModes[j].WifiMode;
+MACmacthFlag = 1;
+break;
+}
+}
+
+if(MACmacthFlag != 1)
+{
+for(var k = 0;k < WifiWorkingModes.length - 1 ; k++)
+{
+if(UserDevinfo[i].IpAddr.toString() == WifiWorkingModes[k].IPAddress.toString())
+{
+UserDevinfo[i].Port = WifiWorkingModes[k].WifiMode;
+MACmacthFlag = 1;
+break;
+}
+}
+}
+if(MACmacthFlag != 1)
+{
+UserDevinfo[i].Port = "--";
+}
+}
+}
+
+
+
+var UserDevinfoTmp = new Array();
+for(var i = 0; i < UserDevinfo.length - 1; i++)
+{
+var id = UserDevinfo[i].Domain.split(".");
+UserDevinfo[i].instid = id[id.length -1];
+if("1" == UserDevinfo[i].IPv4Enabled )
+{
+UserDevinfoTmp.push(UserDevinfo[i]);
+}
+}
+UserDevinfoTmp.push(null);
+
+function GetUserDevInfoList()
+{
+return UserDevinfoTmp;
+}
+
+GetUserDevInfoList();

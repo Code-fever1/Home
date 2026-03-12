@@ -1,0 +1,206 @@
+
+> Home@0.0.1 dev
+> next dev --turbopack -p 3000
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.1.10.17:3000
+- Environments: .env.local
+
+✓ Starting...
+Creating turbopack project {
+  dir: 'C:\\Users\\alija\\Desktop\\New folder\\HOME-ROUTER\\Home',
+  testMode: true
+}
+✓ Ready in 1518ms
+ GET /dashboard 200 in 2.1s (compile: 1235ms, render: 876ms)
+ GET /api/huawei/devices 503 in 2.6s (compile: 1097ms, render: 1543ms)
+[aggregator] ═══ starting network poll (2026-03-12T09:13:37.634Z) ═══
+[aggregator] → polling Huawei HG8245W5…
+[aggregator] → polling Tenda N301…
+[tenda-N301] → connecting to http://100.10.10.3:8080
+[tenda-N301] attempting login…
+[aggregator] → polling Tenda F3…
+[tenda-F3] → connecting to http://100.10.10.4:8080
+[tenda-F3] attempting login…
+[aggregator] → polling D-Link X1852E…
+[dlink] → connecting to D-Link X1852E at http://100.10.10.10
+[aggregator] → polling IP camera…
+[aggregator/camera] ✓ camera online — motion=false
+[tenda-F3] login OK — fetching device list…
+ GET /api/huawei/devices 503 in 487ms (compile: 4ms, render: 483ms)
+[tenda-N301] login OK — fetching device list…
+ GET /api/huawei/devices 503 in 388ms (compile: 3ms, render: 385ms)
+[tenda-F3] ✓ 0 device(s) fetched (WAN: unknown)
+[aggregator/tenda-f3] ✓ login OK — 0 device(s)
+ GET /api/huawei/devices 503 in 383ms (compile: 3ms, render: 380ms)
+[tenda-N301] ✓ 0 device(s) fetched (WAN: unknown)
+[aggregator/tenda-n301] ✓ login OK — 0 device(s)
+[aggregator] ═══ poll complete in 3660ms — 2/4 routers online, 0 device(s), 1 camera(s) ═══
+ GET /api/network/topology 200 in 3.7s (compile: 62ms, render: 3.7s)
+[aggregator] ═══ starting network poll (2026-03-12T09:13:41.306Z) ═══
+[aggregator] → polling Huawei HG8245W5…
+[aggregator] → polling Tenda N301…
+[tenda-N301] → connecting to http://100.10.10.3:8080
+[tenda-N301] attempting login…
+[aggregator] → polling Tenda F3…
+[tenda-F3] → connecting to http://100.10.10.4:8080
+[tenda-F3] attempting login…
+[aggregator] → polling D-Link X1852E…
+[dlink] → connecting to D-Link X1852E at http://100.10.10.10
+[aggregator] → polling IP camera…
+[aggregator/camera] ✓ camera online — motion=false
+[tenda-N301] login OK — fetching device list…
+[tenda-F3] login OK — fetching device list…
+ GET /api/huawei/devices 503 in 532ms (compile: 2ms, render: 530ms)
+ GET /api/huawei/devices 503 in 452ms (compile: 3ms, render: 449ms)
+[tenda-N301] ✓ 0 device(s) fetched (WAN: unknown)
+[aggregator/tenda-n301] ✓ login OK — 0 device(s)
+[tenda-F3] ✓ 0 device(s) fetched (WAN: unknown)
+[aggregator/tenda-f3] ✓ login OK — 0 device(s)
+[aggregator] ═══ poll complete in 4424ms — 2/4 routers online, 0 device(s), 1 camera(s) ═══
+ GET /api/network/topology 200 in 4.4s (compile: 2ms, render: 4.4s)
+[aggregator] ═══ starting network poll (2026-03-12T09:13:45.739Z) ═══
+[aggregator] → polling Huawei HG8245W5…
+[aggregator] → polling Tenda N301…
+[tenda-N301] → connecting to http://100.10.10.3:8080
+[tenda-N301] attempting login…
+[aggregator] → polling Tenda F3…
+[tenda-F3] → connecting to http://100.10.10.4:8080
+[tenda-F3] attempting login…
+[aggregator] → polling D-Link X1852E…
+[dlink] → connecting to D-Link X1852E at http://100.10.10.10
+[aggregator] → polling IP camera…
+[aggregator/camera] ✓ camera online — motion=false
+[tenda-F3] login OK — fetching device list…
+[tenda-N301] login OK — fetching device list…
+ GET /api/huawei/devices 503 in 1010ms (compile: 3ms, render: 1007ms)
+ GET /api/huawei/devices 503 in 485ms (compile: 3ms, render: 483ms)
+ GET /api/network/topology 200 in 2.3s (compile: 2ms, render: 2.2s)
+[tenda-F3] ✓ 0 device(s) fetched (WAN: unknown)
+[aggregator/tenda-f3] ✓ login OK — 0 device(s)
+ GET /api/huawei/devices 503 in 624ms (compile: 2ms, render: 622ms)
+[tenda-N301] ✓ 0 device(s) fetched (WAN: unknown)
+[aggregator/tenda-n301] ✓ login OK — 0 device(s)
+[aggregator] ═══ poll complete in 4086ms — 2/4 routers online, 0 device(s), 1 camera(s) ═══
+ GET /api/huawei/devices 503 in 477ms (compile: 1997µs, render: 475ms)
+ GET /api/huawei/devices 503 in 560ms (compile: 2ms, render: 558ms)
+ GET /api/huawei/devices 503 in 467ms (compile: 2ms, render: 464ms)
+ GET /api/huawei/devices 503 in 595ms (compile: 2ms, render: 593ms)
+ GET /api/huawei/devices 503 in 589ms (compile: 1780µs, render: 587ms)
+ GET /api/huawei/devices 503 in 431ms (compile: 3ms, render: 427ms)
+ GET /api/huawei/devices 503 in 450ms (compile: 2ms, render: 448ms)
+ GET /api/huawei/devices 503 in 419ms (compile: 1814µs, render: 417ms)
+ GET /api/huawei/devices 503 in 437ms (compile: 1855µs, render: 435ms)
+ GET /api/huawei/devices 503 in 526ms (compile: 2ms, render: 524ms)
+ GET /api/huawei/devices 503 in 524ms (compile: 3ms, render: 521ms)
+ GET /api/huawei/devices 503 in 397ms (compile: 1900µs, render: 395ms)
+[aggregator] ═══ starting network poll (2026-03-12T09:14:07.793Z) ═══
+[aggregator] → polling Huawei HG8245W5…
+[aggregator] → polling Tenda N301…
+[tenda-N301] → connecting to http://100.10.10.3:8080
+[tenda-N301] attempting login…
+[aggregator] → polling Tenda F3…
+[tenda-F3] → connecting to http://100.10.10.4:8080
+[tenda-F3] attempting login…
+[aggregator] → polling D-Link X1852E…
+[dlink] → connecting to D-Link X1852E at http://100.10.10.10
+[aggregator] → polling IP camera…
+[aggregator/camera] ✓ camera online — motion=false
+[tenda-F3] login OK — fetching device list…
+[tenda-N301] login OK — fetching device list…
+ GET /api/huawei/devices 503 in 464ms (compile: 3ms, render: 462ms)
+ GET /api/huawei/devices 503 in 469ms (compile: 1999µs, render: 467ms)
+[tenda-N301] ✓ 0 device(s) fetched (WAN: unknown)
+[aggregator/tenda-n301] ✓ login OK — 0 device(s)
+[tenda-F3] ✓ 0 device(s) fetched (WAN: unknown)
+[aggregator/tenda-f3] ✓ login OK — 0 device(s)
+[aggregator] ═══ poll complete in 3625ms — 2/4 routers online, 0 device(s), 1 camera(s) ═══
+ GET /api/network/topology 200 in 3.6s (compile: 2ms, render: 3.6s)
+ GET /api/huawei/devices 503 in 510ms (compile: 3ms, render: 508ms)
+ GET /api/huawei/devices 503 in 630ms (compile: 2ms, render: 628ms)
+ GET /api/huawei/devices 503 in 636ms (compile: 2ms, render: 634ms)
+ GET /api/huawei/devices 503 in 630ms (compile: 2ms, render: 628ms)
+ GET /api/huawei/devices 503 in 400ms (compile: 1919µs, render: 398ms)
+ GET /api/huawei/devices 503 in 388ms (compile: 2ms, render: 386ms)
+ GET /api/huawei/devices 503 in 398ms (compile: 2ms, render: 396ms)
+ GET /api/huawei/devices 503 in 445ms (compile: 1943µs, render: 443ms)
+ GET /api/huawei/devices 503 in 398ms (compile: 2ms, render: 396ms)
+ GET /api/huawei/devices 503 in 404ms (compile: 1908µs, render: 402ms)
+ GET /api/huawei/devices 503 in 406ms (compile: 1730µs, render: 404ms)
+ GET /api/huawei/devices 503 in 395ms (compile: 3ms, render: 392ms)
+ GET /api/huawei/devices 503 in 388ms (compile: 2ms, render: 386ms)
+ GET /api/huawei/devices 503 in 394ms (compile: 1917µs, render: 392ms)
+ GET /api/huawei/devices 503 in 403ms (compile: 3ms, render: 400ms)
+ GET /api/huawei/devices 503 in 387ms (compile: 1903µs, render: 385ms)
+ GET /api/huawei/devices 503 in 374ms (compile: 1751µs, render: 372ms)
+ GET /api/huawei/devices 503 in 399ms (compile: 1891µs, render: 397ms)
+[aggregator] ═══ starting network poll (2026-03-12T09:14:37.781Z) ═══
+[aggregator] → polling Huawei HG8245W5…
+[aggregator] → polling Tenda N301…
+[tenda-N301] → connecting to http://100.10.10.3:8080
+[tenda-N301] attempting login…
+[aggregator] → polling Tenda F3…
+[tenda-F3] → connecting to http://100.10.10.4:8080
+[tenda-F3] attempting login…
+[aggregator] → polling D-Link X1852E…
+[dlink] → connecting to D-Link X1852E at http://100.10.10.10
+[aggregator] → polling IP camera…
+[aggregator/camera] ✓ camera online — motion=false
+[tenda-F3] login OK — fetching device list…
+ GET /api/huawei/devices 503 in 768ms (compile: 2ms, render: 766ms)
+[tenda-N301] login OK — fetching device list…
+ GET /api/huawei/devices 503 in 446ms (compile: 2ms, render: 444ms)
+[tenda-F3] ✓ 0 device(s) fetched (WAN: unknown)
+[aggregator/tenda-f3] ✓ login OK — 0 device(s)
+ GET /api/huawei/devices 503 in 402ms (compile: 2ms, render: 400ms)
+[tenda-N301] ✓ 0 device(s) fetched (WAN: unknown)
+[aggregator/tenda-n301] ✓ login OK — 0 device(s)
+[aggregator] ═══ poll complete in 3564ms — 2/4 routers online, 0 device(s), 1 camera(s) ═══
+ GET /api/network/topology 200 in 3.6s (compile: 2ms, render: 3.6s)
+ GET /api/huawei/devices 503 in 408ms (compile: 2ms, render: 405ms)
+ GET /api/huawei/devices 503 in 387ms (compile: 3ms, render: 385ms)
+ GET /api/huawei/devices 503 in 391ms (compile: 1700µs, render: 389ms)
+ GET /api/huawei/devices 503 in 428ms (compile: 1810µs, render: 427ms)
+ GET /api/huawei/devices 503 in 396ms (compile: 1654µs, render: 395ms)
+ GET /api/huawei/devices 503 in 396ms (compile: 2ms, render: 394ms)
+ GET /api/huawei/devices 503 in 411ms (compile: 2ms, render: 409ms)
+ GET /api/huawei/devices 503 in 434ms (compile: 1986µs, render: 432ms)
+ GET /api/huawei/devices 503 in 388ms (compile: 1919µs, render: 386ms)
+ GET /api/huawei/devices 503 in 394ms (compile: 1627µs, render: 392ms)
+ GET /api/huawei/devices 503 in 414ms (compile: 1941µs, render: 412ms)
+ GET /api/huawei/devices 503 in 402ms (compile: 1947µs, render: 401ms)
+ GET /api/huawei/devices 503 in 416ms (compile: 1891µs, render: 414ms)
+ GET /api/huawei/devices 503 in 403ms (compile: 1942µs, render: 401ms)
+ GET /api/huawei/devices 503 in 411ms (compile: 2ms, render: 409ms)
+ GET /api/huawei/devices 503 in 389ms (compile: 2ms, render: 386ms)
+ GET /api/huawei/devices 503 in 384ms (compile: 2ms, render: 381ms)
+ GET /api/huawei/devices 503 in 402ms (compile: 3ms, render: 399ms)
+ GET /api/huawei/devices 503 in 394ms (compile: 1986µs, render: 392ms)
+ GET /api/huawei/devices 503 in 423ms (compile: 2ms, render: 421ms)
+ GET /api/huawei/devices 503 in 417ms (compile: 2ms, render: 415ms)
+ GET /api/huawei/devices 503 in 395ms (compile: 2ms, render: 393ms)
+ GET /api/huawei/devices 503 in 401ms (compile: 2ms, render: 399ms)
+ GET /api/huawei/devices 503 in 404ms (compile: 2ms, render: 402ms)
+ GET /api/huawei/devices 503 in 400ms (compile: 1991µs, render: 398ms)
+ GET /api/huawei/devices 503 in 414ms (compile: 1895µs, render: 412ms)
+ GET /api/huawei/devices 503 in 412ms (compile: 1761µs, render: 411ms)
+ GET /api/huawei/devices 503 in 392ms (compile: 2ms, render: 390ms)
+ GET /api/huawei/devices 503 in 400ms (compile: 2ms, render: 398ms)
+ GET /api/huawei/devices 503 in 438ms (compile: 3ms, render: 435ms)
+ GET /api/huawei/devices 503 in 396ms (compile: 1830µs, render: 394ms)
+ GET /api/huawei/devices 503 in 395ms (compile: 1670µs, render: 394ms)
+ GET /api/huawei/devices 503 in 401ms (compile: 1790µs, render: 399ms)
+ GET /api/huawei/devices 503 in 395ms (compile: 1857µs, render: 393ms)
+ GET /api/huawei/devices 503 in 408ms (compile: 2ms, render: 406ms)
+ GET /api/huawei/devices 503 in 403ms (compile: 2ms, render: 401ms)
+ GET /api/huawei/devices 503 in 385ms (compile: 1911µs, render: 383ms)
+ GET /api/huawei/devices 503 in 389ms (compile: 2ms, render: 387ms)
+ GET /api/huawei/devices 503 in 408ms (compile: 1895µs, render: 406ms)
+ GET /api/huawei/devices 503 in 433ms (compile: 2ms, render: 431ms)
+ GET /api/huawei/devices 503 in 444ms (compile: 1931µs, render: 442ms)
+ GET /api/huawei/devices 503 in 447ms (compile: 1959µs, render: 445ms)
+ GET /api/huawei/devices 503 in 477ms (compile: 2ms, render: 475ms)
+ GET /api/huawei/devices 503 in 496ms (compile: 1847µs, render: 494ms)
+ GET /api/huawei/devices 503 in 387ms (compile: 2ms, render: 385ms)
+ GET /api/huawei/devices 503 in 410ms (compile: 3ms, render: 407ms)

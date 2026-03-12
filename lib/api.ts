@@ -1,11 +1,91 @@
-import axios, { AxiosInstance, AxiosError } from 'axios';
-import { Router, RouterStats, WiFiSettings, RouterLog } from '@/types/router';
-import { Device, DeviceDetails } from '@/types/device';
-import { NetworkStatus, BandwidthData, NetworkEvent } from '@/types/network';
-import { mockRouters, mockDevices, mockNetworkStatus, generateBandwidthHistory, mockNetworkEvents } from './mockData';
+import axios, { AxiosError, AxiosInstance } from 'axios';
+import { Router, RouterLog, RouterStats, WiFiSettings } from '@/types/router';
+import { Device, DeviceDetails, DeviceType } from '@/types/device';
+import { BandwidthData, NetworkEvent, NetworkStatus } from '@/types/network';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-const USE_MOCK_DATA = true;
+type ApiRouter = {
+  id: string;
+  name: string;
+  model: string;
+  ip: string;
+  status: 'online' | 'offline';
+  connectedClients: number;
+  fetchedAt: string;
+  wanIp?: string;
+};
+
+type ApiDevice = {
+  id: string;
+  name: string;
+  ip: string;
+  mac: string;
+  connection: 'wifi' | 'ethernet' | 'unknown';
+  routerId: string;
+  routerName: string;
+  signal?: number;
+};
+
+type ApiTopology = {
+  fetchedAt: string;
+  summary: {
+    totalRouters: number;
+    onlineRouters: number;
+    totalDevices: number;
+  };
+  routers: ApiRouter[];
+};
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+
+function inferDeviceType(name: string): DeviceType {
+  const lower = name.toLowerCase();
+  if (/iphone|android|mobile|phone|vivo|oppo|tecno|galaxy/.test(lower)) return 'smartphone';
+  if (/macbook|laptop|notebook/.test(lower)) return 'laptop';
+  if (/desktop|pc|workstation/.test(lower)) return 'desktop';
+  if (/ipad|tablet/.test(lower)) return 'tablet';
+  if (/tv|chromecast|roku|fire/.test(lower)) return 'smart_tv';
+  if (/camera|cam|cctv/.test(lower)) return 'camera';
+  if (/printer/.test(lower)) return 'printer';
+  if (/iot|sensor|smart/.test(lower)) return 'iot';
+  return 'other';
+}
+
+function mapRouter(router: ApiRouter): Router {
+  return {
+    id: router.id,
+    name: router.name,
+    model: router.model,
+    ipAddress: router.ip,
+    macAddress: '',
+    status: router.status === 'online' ? 'online' : 'offline',
+    firmwareVersion: 'unknown',
+    cpuUsage: 0,
+    memoryUsage: 0,
+    connectedClients: router.connectedClients,
+    uptime: 0,
+    lastSeen: router.fetchedAt || new Date().toISOString(),
+  };
+}
+
+function mapDevice(device: ApiDevice, fetchedAt: string): Device {
+  return {
+    id: device.id,
+    name: device.name,
+    macAddress: device.mac,
+    ipAddress: device.ip,
+    deviceType: inferDeviceType(device.name),
+    connectionType: device.connection === 'wifi' ? 'wifi' : 'ethernet',
+    routerId: device.routerId,
+    routerName: device.routerName,
+    status: 'online',
+    bandwidthIn: 0,
+    bandwidthOut: 0,
+    firstSeen: fetchedAt,
+    lastSeen: fetchedAt,
+    isBlocked: false,
+    signalStrength: device.signal,
+  };
+}
 
 class ApiClient {
   private client: AxiosInstance;
@@ -13,14 +93,13 @@ class ApiClient {
   constructor() {
     this.client = axios.create({
       baseURL: API_BASE_URL,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       timeout: 10000,
     });
 
     this.client.interceptors.request.use(
       (config) => {
+        if (typeof window === 'undefined') return config;
         const token = localStorage.getItem('auth_token');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
@@ -33,7 +112,7 @@ class ApiClient {
     this.client.interceptors.response.use(
       (response) => response,
       (error: AxiosError) => {
-        if (error.response?.status === 401) {
+        if (typeof window !== 'undefined' && error.response?.status === 401) {
           localStorage.removeItem('auth_token');
           window.location.href = '/login';
         }
@@ -42,168 +121,105 @@ class ApiClient {
     );
   }
 
-  // Auth
   async login(email: string, password: string): Promise<{ token: string; user: { id: string; email: string; name: string } }> {
     const response = await this.client.post('/auth/login', { email, password });
     return response.data;
   }
 
   async logout(): Promise<void> {
-    localStorage.removeItem('auth_token');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+    }
   }
 
-  // Routers
   async getRouters(): Promise<Router[]> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return mockRouters;
-    }
-    const response = await this.client.get('/routers');
-    return response.data;
+    const response = await this.client.get('/network/routers');
+    const routers = (response.data.routers || []) as ApiRouter[];
+    return routers.map(mapRouter);
   }
 
   async getRouter(id: string): Promise<Router> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      const router = mockRouters.find(r => r.id === id);
-      if (!router) throw new Error('Router not found');
-      return router;
-    }
-    const response = await this.client.get(`/routers/${id}`);
-    return response.data;
+    const routers = await this.getRouters();
+    const router = routers.find((entry) => entry.id === id);
+    if (!router) throw new Error('Router not found');
+    return router;
   }
 
-  async getRouterStats(id: string, hours = 24): Promise<RouterStats[]> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      return generateBandwidthHistory().map(d => ({
-        timestamp: d.timestamp,
-        cpuUsage: Math.floor(Math.random() * 60) + 20,
-        memoryUsage: Math.floor(Math.random() * 50) + 30,
-        bandwidthIn: d.download,
-        bandwidthOut: d.upload,
-      }));
-    }
-    const response = await this.client.get(`/routers/${id}/stats`, { params: { hours } });
-    return response.data;
+  async getRouterStats(_id: string, _hours = 24): Promise<RouterStats[]> {
+    return [];
   }
 
-  async getRouterLogs(id: string, limit = 100): Promise<RouterLog[]> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      return [
-        { id: 'log-1', routerId: id, timestamp: new Date().toISOString(), level: 'info', message: 'System startup complete', source: 'system' },
-        { id: 'log-2', routerId: id, timestamp: new Date(Date.now() - 60000).toISOString(), level: 'info', message: 'DHCP lease assigned to 192.168.1.101', source: 'dhcp' },
-        { id: 'log-3', routerId: id, timestamp: new Date(Date.now() - 120000).toISOString(), level: 'warning', message: 'High memory usage detected', source: 'monitor' },
-      ];
-    }
-    const response = await this.client.get(`/routers/${id}/logs`, { params: { limit } });
-    return response.data;
+  async getRouterLogs(_id: string, _limit = 100): Promise<RouterLog[]> {
+    return [];
   }
 
   async rebootRouter(id: string): Promise<void> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return;
-    }
     await this.client.post(`/routers/${id}/reboot`);
   }
 
   async updateWiFiSettings(id: string, settings: WiFiSettings): Promise<void> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return;
-    }
     await this.client.put(`/routers/${id}/wifi`, settings);
   }
 
-  // Devices
   async getDevices(): Promise<Device[]> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return mockDevices.map(d => ({
-        ...d,
-        routerName: mockRouters.find(r => r.id === d.routerId)?.name,
-      }));
-    }
-    const response = await this.client.get('/devices');
-    return response.data;
+    const response = await this.client.get('/network/devices');
+    const fetchedAt = response.data.fetchedAt || new Date().toISOString();
+    const devices = (response.data.devices || []) as ApiDevice[];
+    return devices.map((device) => mapDevice(device, fetchedAt));
   }
 
   async getDevice(id: string): Promise<DeviceDetails> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      const device = mockDevices.find(d => d.id === id);
-      if (!device) throw new Error('Device not found');
-      return {
-        ...device,
-        routerName: mockRouters.find(r => r.id === device.routerId)?.name,
-        history: generateBandwidthHistory().slice(-24).map(d => ({
-          timestamp: d.timestamp,
-          bandwidthIn: d.download,
-          bandwidthOut: d.upload,
-          latency: Math.floor(Math.random() * 20) + 5,
-        })),
-        openPorts: [80, 443, 8080],
-        os: 'iOS',
-        osVersion: '17.1',
-      };
-    }
-    const response = await this.client.get(`/devices/${id}`);
-    return response.data;
+    const devices = await this.getDevices();
+    const device = devices.find((entry) => entry.id === id);
+    if (!device) throw new Error('Device not found');
+    return {
+      ...device,
+      history: [],
+      openPorts: [],
+    };
   }
 
   async blockDevice(id: string): Promise<void> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      return;
-    }
     await this.client.post(`/devices/${id}/block`);
   }
 
   async unblockDevice(id: string): Promise<void> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      return;
-    }
     await this.client.post(`/devices/${id}/unblock`);
   }
 
   async renameDevice(id: string, name: string): Promise<void> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      return;
-    }
     await this.client.put(`/devices/${id}`, { name });
   }
 
-  // Network
   async getNetworkStatus(): Promise<NetworkStatus> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      return mockNetworkStatus;
-    }
-    const response = await this.client.get('/network/status');
-    return response.data;
+    const response = await this.client.get('/network/topology');
+    const topology = response.data as ApiTopology;
+    const gateway = topology.routers?.[0]?.ip?.replace(/^https?:\/\//, '') || 'unknown';
+    const wanIp = topology.routers?.find((router) => router.wanIp)?.wanIp;
+    const onlineRouters = topology.summary?.onlineRouters || 0;
+
+    return {
+      status: onlineRouters > 0 ? 'online' : 'offline',
+      wanIp,
+      gateway,
+      dns: [],
+      internetSpeed: { download: 0, upload: 0, ping: 0 },
+      totalBandwidth: { download: 0, upload: 0 },
+      activeDevices: topology.summary?.totalDevices || 0,
+      totalDevices: topology.summary?.totalDevices || 0,
+      activeRouters: onlineRouters,
+      totalRouters: topology.summary?.totalRouters || 0,
+    };
   }
 
-  async getBandwidthHistory(hours = 24): Promise<BandwidthData[]> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      return generateBandwidthHistory();
-    }
-    const response = await this.client.get('/network/bandwidth', { params: { hours } });
-    return response.data;
+  async getBandwidthHistory(_hours = 24): Promise<BandwidthData[]> {
+    return [];
   }
 
-  async getNetworkEvents(limit = 50): Promise<NetworkEvent[]> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      return mockNetworkEvents.slice(0, limit);
-    }
-    const response = await this.client.get('/network/events', { params: { limit } });
-    return response.data;
+  async getNetworkEvents(_limit = 50): Promise<NetworkEvent[]> {
+    return [];
   }
 }
 
 export const api = new ApiClient();
+

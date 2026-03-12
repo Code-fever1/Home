@@ -2,7 +2,7 @@
  * GET /api/network/devices
  *
  * Returns all connected devices from all routers (Huawei + Tenda N301 + F3),
- * aggregated and normalised. Falls back to mock data per-device on failure.
+ * aggregated and normalised.
  */
 
 import { NextResponse } from 'next/server';

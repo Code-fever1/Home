@@ -134,7 +134,14 @@ async function safeHuawei(): Promise<{ data: HuaweiResponse; error?: RouterError
     const message = err instanceof Error ? err.message : String(err);
     console.warn('[aggregator/huawei] ✗ %s: %s', kind, message);
     return {
-      data: { router: 'Huawei HG8245W5', deviceCount: 0, devices: [], source: 'live', fetchedAt: new Date().toISOString() },
+      data: {
+        router: 'Huawei HG8245W5',
+        routerIP: '100.10.10.1',
+        deviceCount: 0,
+        devices: [],
+        source: 'live',
+        fetchedAt: new Date().toISOString(),
+      },
       error: { kind, message },
     };
   }
@@ -221,7 +228,7 @@ function huaweiToRouter(res: HuaweiResponse, error?: RouterErrorInfo): Normalise
     id: 'huawei',
     name: 'Main Gateway',
     model: res.router,
-    ip: 'http://100.10.10.1',
+    ip: `http://${res.routerIP}`,
     status: error ? 'offline' : 'online',
     source: 'live',
     connectedClients: res.deviceCount,

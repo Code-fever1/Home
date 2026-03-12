@@ -1,0 +1,118 @@
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\alija\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\alija\Desktop\New folder\HOME-ROUTER\Home\package-lock.json
+
+(node:18668) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[api/huawei/devices] error: offline Router is unreachable
+[dlink] ✗ login_failed: HNAP phase-1 did not return Challenge/PublicKey
+[aggregator/dlink] ✗ login_failed: HNAP phase-1 did not return Challenge/PublicKey
+[aggregator/huawei] ✗ offline: Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[dlink] ✗ login_failed: HNAP phase-1 did not return Challenge/PublicKey
+[aggregator/dlink] ✗ login_failed: HNAP phase-1 did not return Challenge/PublicKey
+[aggregator/huawei] ✗ offline: Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[dlink] ✗ login_failed: HNAP phase-1 did not return Challenge/PublicKey
+[aggregator/dlink] ✗ login_failed: HNAP phase-1 did not return Challenge/PublicKey
+[api/huawei/devices] error: offline Router is unreachable
+[aggregator/huawei] ✗ offline: Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[dlink] ✗ login_failed: HNAP phase-1 did not return Challenge/PublicKey
+[aggregator/dlink] ✗ login_failed: HNAP phase-1 did not return Challenge/PublicKey
+[aggregator/huawei] ✗ offline: Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[dlink] ✗ login_failed: HNAP phase-1 did not return Challenge/PublicKey
+[aggregator/dlink] ✗ login_failed: HNAP phase-1 did not return Challenge/PublicKey
+[api/huawei/devices] error: offline Router is unreachable
+[aggregator/huawei] ✗ offline: Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable
+[api/huawei/devices] error: offline Router is unreachable

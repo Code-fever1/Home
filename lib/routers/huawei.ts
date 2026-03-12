@@ -1,22 +1,6 @@
-/**
- * Huawei HG8245W5 router service — SERVER SIDE ONLY.
- *
- * Login flow:
- *   1. POST credentials to the router admin panel.
- *   2. Capture the Set-Cookie header and store it in a shared cookie jar.
- *   3. All subsequent requests carry the session cookie automatically.
- *
- * All functions throw typed RouterError on failure so callers can decide
- * whether to surface the error or fall back to mock data.
- */
-
-import axios, { AxiosInstance, AxiosError } from 'axios';
+import axios, { AxiosError, AxiosInstance } from 'axios';
 import { CookieJar } from 'tough-cookie';
 import { routerConfig } from '@/lib/config';
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
 
 export type RouterErrorKind =
   | 'offline'
@@ -37,7 +21,7 @@ export class RouterError extends Error {
   }
 }
 
-export interface RouterDevice {
+export interface HuaweiDevice {
   name: string;
   ip: string;
   mac: string;
@@ -46,68 +30,94 @@ export interface RouterDevice {
   leaseTime?: string;
 }
 
-export interface RouterStatus {
-  model: string;
-  firmwareVersion: string;
-  uptime: number;
-  wanIp: string;
-  wanStatus: 'connected' | 'disconnected' | 'unknown';
-  cpuUsage: number;
-  memoryUsage: number;
-  ssid?: string;
-  ssid5g?: string;
-  connectedClients: number;
-}
-
-export interface DevicesResponse {
+export interface HuaweiDevicesResponse {
   router: string;
+  routerIP: string;
   deviceCount: number;
-  devices: RouterDevice[];
-  source: 'live' | 'mock';
+  devices: HuaweiDevice[];
+  source: 'live';
   fetchedAt: string;
 }
 
-// ---------------------------------------------------------------------------
-// Internal HTTP client with cookie jar
-// ---------------------------------------------------------------------------
+export type RouterDevice = HuaweiDevice;
+export type DevicesResponse = HuaweiDevicesResponse;
 
-/** Build an Axios instance that persists cookies between requests. */
+interface HuaweiSession {
+  client: AxiosInstance;
+  routerIP: string;
+  username: string;
+}
+
+interface LanDeviceEntry {
+  ip: string;
+  mac: string;
+  status: string;
+  port: string;
+  portType: string;
+  hostname: string;
+  alias: string;
+  devType: string;
+  leaseSeconds?: number;
+  ipv4Enabled?: boolean;
+}
+
+interface DhcpDeviceEntry {
+  ip: string;
+  mac: string;
+  name: string;
+  devType: string;
+  interfaceType: string;
+  addressSource: string;
+  leaseSeconds?: number;
+}
+
+const ROUTER_NAME = 'Huawei HG8245W5';
+const LOGIN_LANGUAGE = 'english';
+const RETRYABLE_CODES = new Set(['ECONNRESET', 'EPIPE', 'ECONNABORTED', 'ETIMEDOUT']);
+
 function createHttpClient(baseURL: string, timeout: number): AxiosInstance {
   const jar = new CookieJar();
-
   const client = axios.create({
     baseURL,
     timeout,
-    withCredentials: true,
     maxRedirects: 5,
-    validateStatus: (status) => status < 500, // don't throw on 4xx by default
+    validateStatus: (status) => status < 500,
     headers: {
       'User-Agent':
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      Accept: 'text/html,application/xhtml+xml,application/json,*/*',
+      Accept: 'text/html,application/xhtml+xml,application/xml,*/*',
       'Accept-Language': 'en-US,en;q=0.9',
       'Cache-Control': 'no-cache',
+      Pragma: 'no-cache',
     },
   });
 
-  // Attach cookie jar to every request
   client.interceptors.request.use(async (config) => {
     const url = `${config.baseURL ?? ''}${config.url ?? ''}`;
-    const cookieHeader = await jar.getCookieString(url).catch(() => '');
-    if (cookieHeader) {
+    const jarCookie = await jar.getCookieString(url).catch(() => '');
+    if (jarCookie) {
+      const currentCookieHeader =
+        (typeof config.headers?.Cookie === 'string' && config.headers.Cookie) ||
+        (typeof config.headers?.cookie === 'string' && config.headers.cookie) ||
+        '';
+
+      const mergedCookie = currentCookieHeader
+        ? `${currentCookieHeader}; ${jarCookie}`
+        : jarCookie;
+
       config.headers = config.headers ?? {};
-      config.headers['Cookie'] = cookieHeader;
+      config.headers.Cookie = mergedCookie;
     }
+
     return config;
   });
 
-  // Persist Set-Cookie headers from every response
   client.interceptors.response.use(async (response) => {
     const setCookie = response.headers['set-cookie'];
-    if (setCookie) {
-      const requestUrl = `${response.config.baseURL ?? ''}${response.config.url ?? ''}`;
+    if (Array.isArray(setCookie) && setCookie.length > 0) {
+      const url = `${response.config.baseURL ?? ''}${response.config.url ?? ''}`;
       for (const cookie of setCookie) {
-        await jar.setCookie(cookie, requestUrl).catch(() => {});
+        await jar.setCookie(cookie, url).catch(() => undefined);
       }
     }
     return response;
@@ -116,268 +126,301 @@ function createHttpClient(baseURL: string, timeout: number): AxiosInstance {
   return client;
 }
 
-// ---------------------------------------------------------------------------
-// Login
-// ---------------------------------------------------------------------------
+function cleanRouterString(value: string): string {
+  return value.replace(/^\uFEFF/, '').replace(/^ï»¿/, '').trim();
+}
 
-/**
- * Attempt to authenticate with the router.
- * The HG8245W5 firmware accepts a form POST on the root URL.
- * Some firmware revisions also respond to /login.html.
- */
-async function login(client: AxiosInstance, username: string, password: string): Promise<void> {
-  const loginEndpoints = ['/', '/login.html', '/login.cgi'];
+function toResponseString(data: unknown): string {
+  if (typeof data === 'string') return cleanRouterString(data);
+  if (data === null || data === undefined) return '';
+  if (typeof data === 'object') return cleanRouterString(JSON.stringify(data));
+  return cleanRouterString(String(data));
+}
 
+function stripProtocol(ip: string): string {
+  return ip.replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+}
+
+function isWaitingPage(body: string): boolean {
+  return /<title>\s*Waiting\.\.\.\s*<\/title>/i.test(body) || /top\.location\.replace\(/i.test(body);
+}
+
+function isLoginPage(body: string): boolean {
+  return /LoginSubmit|txt_Username|txt_Password|loginbutton/i.test(body);
+}
+
+function sanitiseToken(rawToken: string): string {
+  const tokenMatch = cleanRouterString(rawToken).match(/[A-Fa-f0-9]{16,64}/);
+  if (!tokenMatch) {
+    throw new RouterError('login_failed', 'Router token was not returned by /asp/GetRandCount.asp');
+  }
+  return tokenMatch[0];
+}
+
+function encodePassword(password: string): string {
+  return Buffer.from(password, 'utf8').toString('base64');
+}
+
+function normaliseMac(mac: string): string {
+  return mac.replace(/-/g, ':').toUpperCase();
+}
+
+function isValidIp(ip: string): boolean {
+  if (!ip || ip === '--' || ip === '0.0.0.0') return false;
+  const parts = ip.split('.');
+  if (parts.length !== 4) return false;
+  for (const part of parts) {
+    const n = Number(part);
+    if (!Number.isInteger(n) || n < 0 || n > 255) return false;
+  }
+  return !ip.endsWith('.0') && !ip.endsWith('.255');
+}
+
+function parseLeaseTime(seconds?: number): string | undefined {
+  if (!seconds || Number.isNaN(seconds) || seconds <= 0) return undefined;
+  if (seconds < 60) return `${seconds}s`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+  return `${Math.floor(seconds / 3600)}h`;
+}
+
+function isRetryableNetworkError(err: unknown): boolean {
+  const axiosErr = err as AxiosError;
+  return Boolean(axiosErr?.isAxiosError && axiosErr.code && RETRYABLE_CODES.has(axiosErr.code));
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function withRetry<T>(operationName: string, op: () => Promise<T>, attempts = 3): Promise<T> {
   let lastError: unknown;
-
-  for (const endpoint of loginEndpoints) {
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
-      const params = new URLSearchParams();
-      params.append('UserName', username);
-      params.append('PassWord', password);
-      params.append('Language', 'english');
-
-      const response = await client.post(endpoint, params.toString(), {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          Referer: `${routerConfig.huawei.ip}${endpoint}`,
-        },
-      });
-
-      // Successful login: router returns 200 or redirects (3xx)
-      // A 401/403 or a page that still contains "login" strongly indicates failure
-      const body: string = typeof response.data === 'string' ? response.data : '';
-      const isRejected =
-        response.status === 401 ||
-        response.status === 403 ||
-        /incorrect|invalid|error|login/i.test(body.slice(0, 500)) ||
-        body.toLowerCase().includes('username') && !body.toLowerCase().includes('logout');
-
-      if (!isRejected) {
-        return; // login accepted
-      }
-
-      lastError = new RouterError(
-        'invalid_credentials',
-        `Router rejected credentials (status ${response.status})`
-      );
+      return await op();
     } catch (err) {
       lastError = err;
-    }
-  }
-
-  throw classifyError(lastError);
-}
-
-// ---------------------------------------------------------------------------
-// Device list
-// ---------------------------------------------------------------------------
-
-/**
- * Fetch the list of connected LAN/WiFi clients.
- * The HG8245W5 exposes DHCP/ARP tables at several known paths.
- */
-async function fetchDevices(client: AxiosInstance): Promise<RouterDevice[]> {
-  // Endpoints known to carry host tables on Huawei HG8245 series firmwares
-  const candidateEndpoints = [
-    '/html/bbsp/dhcp/dhcp.asp',
-    '/html/bbsp/wlanratedynamic/wlanratedynamic.asp',
-    '/html/bbsp/arplist/arplist.asp',
-    '/cgi-bin/config.exp',
-    '/userRpm/StatusClientsRpm.htm',
-  ];
-
-  for (const endpoint of candidateEndpoints) {
-    try {
-      const response = await client.get(endpoint);
-      if (response.status === 200 && typeof response.data === 'string') {
-        const parsed = parseDeviceTable(response.data);
-        if (parsed.length > 0) return parsed;
+      if (!isRetryableNetworkError(err) || attempt >= attempts) {
+        throw err;
       }
-    } catch {
-      // Try next endpoint
+      const code = (err as AxiosError).code ?? 'unknown';
+      console.warn('[huawei] %s retry %d/%d after %s', operationName, attempt, attempts, code);
+      await delay(120 * attempt);
     }
   }
-
-  // Fallback: scrape ARP/DHCP from the main status page
-  try {
-    const response = await client.get('/');
-    if (response.status === 200 && typeof response.data === 'string') {
-      return parseDeviceTable(response.data);
-    }
-  } catch {
-    // ignore
-  }
-
-  return [];
+  throw lastError;
 }
 
-// ---------------------------------------------------------------------------
-// Router status
-// ---------------------------------------------------------------------------
-
-/**
- * Fetch high-level router status (WAN, CPU, memory, uptime…).
- */
-async function fetchStatus(client: AxiosInstance): Promise<Partial<RouterStatus>> {
-  const statusEndpoints = [
-    '/html/bbsp/wan/wan.asp',
-    '/html/bbsp/common/status.asp',
-    '/statusRpm.htm',
-    '/',
-  ];
-
-  for (const endpoint of statusEndpoints) {
-    try {
-      const response = await client.get(endpoint);
-      if (response.status === 200 && typeof response.data === 'string') {
-        return parseStatusPage(response.data);
-      }
-    } catch {
-      // Try next
-    }
-  }
-
-  return {};
+function decodeJsEscapes(value: string): string {
+  return value
+    .replace(/\\x([0-9A-Fa-f]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/\\u([0-9A-Fa-f]{4})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/\\'/g, "'")
+    .replace(/\\"/g, '"')
+    .replace(/\\\\/g, '\\')
+    .trim();
 }
 
-// ---------------------------------------------------------------------------
-// HTML parsers (regex-based, firmware-agnostic)
-// ---------------------------------------------------------------------------
-
-/** Extract device rows from any page that embeds ARP/DHCP table data. */
-function parseDeviceTable(html: string): RouterDevice[] {
-  const devices: RouterDevice[] = [];
-  const seen = new Set<string>();
-
-  // Pattern 1 — MAC + IP pairs anywhere in HTML/JS
-  const macIpPattern =
-    /([0-9A-Fa-f]{2}[:\-][0-9A-Fa-f]{2}[:\-][0-9A-Fa-f]{2}[:\-][0-9A-Fa-f]{2}[:\-][0-9A-Fa-f]{2}[:\-][0-9A-Fa-f]{2}).*?(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/g;
-
+function extractQuotedArgs(content: string): string[] {
+  const args: string[] = [];
+  const pattern = /"((?:\\.|[^"\\])*)"/g;
   let match: RegExpExecArray | null;
-  while ((match = macIpPattern.exec(html)) !== null) {
-    const mac = normaliseMac(match[1]);
-    const ip = match[2];
+  while ((match = pattern.exec(content)) !== null) {
+    args.push(decodeJsEscapes(match[1]));
+  }
+  return args;
+}
 
-    // Skip gateway / broadcast addresses
-    if (ip.endsWith('.0') || ip.endsWith('.255') || ip === '0.0.0.0') continue;
-    if (seen.has(mac)) continue;
-    seen.add(mac);
+function parseLanUserDeviceScript(body: string): LanDeviceEntry[] {
+  const entries: LanDeviceEntry[] = [];
+  const pattern = /new\s+USERDevice\s*\(([^)]*)\)/gi;
+  let match: RegExpExecArray | null;
 
-    devices.push({
-      name: guessName(html, mac, ip),
+  while ((match = pattern.exec(body)) !== null) {
+    const args = extractQuotedArgs(match[1]);
+    if (args.length < 16) continue;
+
+    const ip = args[1];
+    const mac = normaliseMac(args[2]);
+    if (!isValidIp(ip) || !mac) continue;
+
+    const leaseSeconds = Number(args[15]);
+    entries.push({
       ip,
       mac,
-      connection: guessConnectionType(html, mac),
-      signal: guessSignalStrength(html, mac),
+      status: args[6] ?? '',
+      port: args[3] ?? '',
+      portType: args[7] ?? '',
+      hostname: args[9] ?? '',
+      alias: args[13] ?? '',
+      devType: args[5] ?? '',
+      leaseSeconds: Number.isFinite(leaseSeconds) ? leaseSeconds : undefined,
+      ipv4Enabled: args[10] === '1',
     });
   }
 
-  // Pattern 2 — JSON arrays sometimes embedded in <script> blocks
-  const jsonPattern = /\[\s*\{[^}]*"mac"[^}]*\}/g;
-  const jsonMatches = html.match(jsonPattern);
-  if (jsonMatches) {
-    for (const fragment of jsonMatches) {
-      try {
-        const arr: Array<{ mac: string; ip: string; name?: string; type?: string }> =
-          JSON.parse(fragment + ']');
-        for (const entry of arr) {
-          if (!entry.mac || !entry.ip) continue;
-          const mac = normaliseMac(entry.mac);
-          if (seen.has(mac)) continue;
-          seen.add(mac);
-          devices.push({
-            name: entry.name ?? `Device-${mac.slice(-5)}`,
-            ip: entry.ip,
-            mac,
-            connection: entry.type === 'wifi' ? 'wifi' : 'ethernet',
-          });
-        }
-      } catch {
-        // ignore malformed JSON
-      }
+  return entries;
+}
+
+function parseLegacyLanArray(body: string): LanDeviceEntry[] {
+  const entries: LanDeviceEntry[] = [];
+  const rowPattern = /DevInfoArry\s*\[\d+\]\s*=\s*["']([^"']+)["']/gi;
+  let row: RegExpExecArray | null;
+
+  while ((row = rowPattern.exec(body)) !== null) {
+    const raw = row[1];
+    const parts = raw.includes('/') ? raw.split('/') : raw.split('$');
+    if (parts.length < 3) continue;
+
+    const mac = normaliseMac(parts[0].trim());
+    const ip = parts[1].trim();
+    if (!isValidIp(ip) || !mac) continue;
+
+    const connectionField = parts[2]?.trim() ?? '';
+    entries.push({
+      ip,
+      mac,
+      status: 'Online',
+      port: connectionField === '0' ? 'LAN' : 'SSID',
+      portType: connectionField === '0' ? 'ETH' : 'WIFI',
+      hostname: parts[4]?.trim() ?? '',
+      alias: '',
+      devType: parts[4]?.trim() ?? '',
+    });
+  }
+
+  return entries;
+}
+
+function parseDhcpScript(body: string): DhcpDeviceEntry[] {
+  const entries: DhcpDeviceEntry[] = [];
+  const pattern = /new\s+DHCPInfo\s*\(([^)]*)\)/gi;
+  let match: RegExpExecArray | null;
+
+  while ((match = pattern.exec(body)) !== null) {
+    const args = extractQuotedArgs(match[1]);
+    if (args.length < 8) continue;
+
+    const ip = args[2];
+    const mac = normaliseMac(args[3]);
+    if (!isValidIp(ip) || !mac) continue;
+
+    const leaseSeconds = Number(args[4]);
+    entries.push({
+      ip,
+      mac,
+      name: args[1] ?? '',
+      devType: args[5] ?? '',
+      interfaceType: args[6] ?? '',
+      addressSource: args[7] ?? '',
+      leaseSeconds: Number.isFinite(leaseSeconds) ? leaseSeconds : undefined,
+    });
+  }
+
+  return entries;
+}
+
+function parseLegacyDhcpArray(body: string): DhcpDeviceEntry[] {
+  const entries: DhcpDeviceEntry[] = [];
+  const rowPattern = /DhcpInfoArry\s*\[\d+\]\s*=\s*["']([^"']+)["']/gi;
+  let row: RegExpExecArray | null;
+
+  while ((row = rowPattern.exec(body)) !== null) {
+    const raw = row[1];
+    const parts = raw.includes('/') ? raw.split('/') : raw.split('$');
+    if (parts.length < 4) continue;
+
+    const mac = normaliseMac(parts[0].trim());
+    const ip = parts[1].trim();
+    if (!isValidIp(ip) || !mac) continue;
+
+    const leaseSeconds = Number(parts[3]);
+    entries.push({
+      ip,
+      mac,
+      name: parts[2]?.trim() ?? '',
+      devType: '',
+      interfaceType: '',
+      addressSource: '',
+      leaseSeconds: Number.isFinite(leaseSeconds) ? leaseSeconds : undefined,
+    });
+  }
+
+  return entries;
+}
+
+function inferConnection(lan?: LanDeviceEntry, dhcp?: DhcpDeviceEntry): HuaweiDevice['connection'] {
+  const samples = [lan?.portType ?? '', lan?.port ?? '', dhcp?.interfaceType ?? ''].join(' ');
+  if (/wifi|wlan|ssid|802\.11/i.test(samples)) return 'wifi';
+  if (/eth|lan|ethernet/i.test(samples)) return 'ethernet';
+  return 'unknown';
+}
+
+function pickName(lan: LanDeviceEntry, dhcp?: DhcpDeviceEntry): string {
+  const candidates = [lan.alias, lan.hostname, dhcp?.name ?? '', lan.devType, dhcp?.devType ?? ''];
+  for (const candidate of candidates) {
+    const value = candidate.trim();
+    if (!value || value === '--' || value === '0') continue;
+    return value;
+  }
+  return `Device-${lan.ip.split('.').pop()}`;
+}
+
+function mergeDevices(lanEntries: LanDeviceEntry[], dhcpEntries: DhcpDeviceEntry[]): HuaweiDevice[] {
+  const dhcpByMac = new Map<string, DhcpDeviceEntry>();
+  const dhcpByIp = new Map<string, DhcpDeviceEntry>();
+  for (const dhcp of dhcpEntries) {
+    dhcpByMac.set(dhcp.mac, dhcp);
+    dhcpByIp.set(dhcp.ip, dhcp);
+  }
+
+  const devices: HuaweiDevice[] = [];
+  const seen = new Set<string>();
+
+  for (const lan of lanEntries) {
+    if (!lan.ipv4Enabled && lan.ipv4Enabled !== undefined) continue;
+    if (!/online/i.test(lan.status || '')) continue;
+
+    const dhcp = dhcpByMac.get(lan.mac) ?? dhcpByIp.get(lan.ip);
+    const mac = normaliseMac(lan.mac);
+    if (seen.has(mac)) continue;
+    seen.add(mac);
+
+    const leaseTime = parseLeaseTime(lan.leaseSeconds ?? dhcp?.leaseSeconds);
+    devices.push({
+      name: pickName(lan, dhcp),
+      ip: lan.ip,
+      mac,
+      connection: inferConnection(lan, dhcp),
+      ...(leaseTime ? { leaseTime } : {}),
+    });
+  }
+
+  // Firmware variants that do not expose USERDevice can still expose DHCP data.
+  if (devices.length === 0 && lanEntries.length === 0) {
+    for (const dhcp of dhcpEntries) {
+      const mac = normaliseMac(dhcp.mac);
+      if (seen.has(mac)) continue;
+      seen.add(mac);
+      const leaseTime = parseLeaseTime(dhcp.leaseSeconds);
+      devices.push({
+        name: dhcp.name && dhcp.name !== '--' ? dhcp.name : `Device-${dhcp.ip.split('.').pop()}`,
+        ip: dhcp.ip,
+        mac,
+        connection: inferConnection(undefined, dhcp),
+        ...(leaseTime ? { leaseTime } : {}),
+      });
     }
   }
 
   return devices;
 }
 
-function parseStatusPage(html: string): Partial<RouterStatus> {
-  const extract = (pattern: RegExp): string | undefined =>
-    pattern.exec(html)?.[1]?.trim();
-
-  const wanIp =
-    extract(/WAN\s*IP[^>]*>[^>]*>([\d.]+)/) ??
-    extract(/ip[Aa]ddress['":\s]+([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})/);
-
-  const firmware = extract(/[Ff]irmware[^>]*>[^>]*>([V\d.A-Za-z]+)/);
-  const uptime = extract(/[Uu]ptime[^>]*>[^>]*>([^<]+)/);
-
-  return {
-    model: 'Huawei HG8245W5',
-    wanIp: wanIp ?? 'unknown',
-    wanStatus: wanIp ? 'connected' : 'unknown',
-    firmwareVersion: firmware ?? 'unknown',
-    uptime: parseUptimeSeconds(uptime ?? ''),
-    cpuUsage: 0,
-    memoryUsage: 0,
-    connectedClients: 0,
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function normaliseMac(mac: string): string {
-  return mac.replace(/-/g, ':').toUpperCase();
-}
-
-function guessName(html: string, mac: string, ip: string): string {
-  // Try to find a hostname near the MAC address
-  const macEscaped = mac.replace(/:/g, '[:\\-]');
-  const hostnamePattern = new RegExp(
-    macEscaped + '[^\\n]{0,200}?([A-Za-z][A-Za-z0-9\\-_]{2,30})',
-    'i'
-  );
-  const match = hostnamePattern.exec(html);
-  if (match?.[1] && !/^(td|tr|div|span|table|html|body|head)$/i.test(match[1])) {
-    return match[1];
-  }
-  return `Device-${ip.split('.').pop()}`;
-}
-
-function guessConnectionType(html: string, mac: string): 'wifi' | 'ethernet' {
-  const macEscaped = mac.replace(/:/g, '[:\\-]');
-  const context = new RegExp(macEscaped + '[^\\n]{0,300}', 'i').exec(html)?.[0] ?? '';
-  return /wifi|wireless|wlan|ssid/i.test(context) ? 'wifi' : 'ethernet';
-}
-
-function guessSignalStrength(html: string, mac: string): number | undefined {
-  const macEscaped = mac.replace(/:/g, '[:\\-]');
-  const context = new RegExp(macEscaped + '[^\\n]{0,300}', 'i').exec(html)?.[0] ?? '';
-  const rssiMatch = /(-\d{2,3})\s*dBm/i.exec(context);
-  if (rssiMatch) return Number(rssiMatch[1]);
-  return undefined;
-}
-
-function parseUptimeSeconds(text: string): number {
-  if (!text) return 0;
-  let seconds = 0;
-  const days = /(\d+)\s*day/i.exec(text);
-  const hours = /(\d+)\s*hour/i.exec(text);
-  const minutes = /(\d+)\s*min/i.exec(text);
-  if (days) seconds += Number(days[1]) * 86400;
-  if (hours) seconds += Number(hours[1]) * 3600;
-  if (minutes) seconds += Number(minutes[1]) * 60;
-  return seconds;
-}
-
 function classifyError(err: unknown): RouterError {
   if (err instanceof RouterError) return err;
+
   const axiosErr = err as AxiosError;
-  if (axiosErr.isAxiosError) {
-    if (axiosErr.code === 'ECONNREFUSED' || axiosErr.code === 'ENOTFOUND') {
+  if (axiosErr?.isAxiosError) {
+    if (axiosErr.code === 'ECONNREFUSED' || axiosErr.code === 'ENOTFOUND' || axiosErr.code === 'EHOSTUNREACH') {
       return new RouterError('offline', 'Router is unreachable', err);
     }
     if (axiosErr.code === 'ETIMEDOUT' || axiosErr.code === 'ECONNABORTED') {
@@ -386,105 +429,182 @@ function classifyError(err: unknown): RouterError {
     if (axiosErr.response?.status === 401 || axiosErr.response?.status === 403) {
       return new RouterError('invalid_credentials', 'Invalid router credentials', err);
     }
-    // No response at all = router unreachable (covers axios-mock-adapter networkError())
     if (!axiosErr.response) {
       return new RouterError('offline', 'Router is unreachable', err);
     }
   }
-  return new RouterError('unknown', String(err), err);
+
+  return new RouterError('unknown', err instanceof Error ? err.message : String(err), err);
 }
 
-// ---------------------------------------------------------------------------
-// Mock fallback data
-// ---------------------------------------------------------------------------
+async function fetchScriptPayload(
+  session: HuaweiSession,
+  label: string,
+  candidates: string[]
+): Promise<{ endpoint: string; body: string }> {
+  let lastResponse = '';
 
-export function getMockDevicesResponse(): DevicesResponse {
-  return {
-    router: 'Huawei HG8245W5',
-    deviceCount: 6,
-    source: 'mock',
-    fetchedAt: new Date().toISOString(),
-    devices: [
-      { name: 'AliJah-Laptop', ip: '100.10.10.15', mac: 'AC:12:34:55:AA:22', connection: 'wifi', signal: -55 },
-      { name: 'iPhone-Home', ip: '100.10.10.20', mac: 'B4:F1:DA:1F:3A:01', connection: 'wifi', signal: -62 },
-      { name: 'Smart-TV', ip: '100.10.10.25', mac: '00:E0:91:B4:20:11', connection: 'wifi', signal: -70 },
-      { name: 'Desktop-PC', ip: '100.10.10.30', mac: '30:9C:23:E4:AA:07', connection: 'ethernet' },
-      { name: 'iPad-Pro', ip: '100.10.10.35', mac: 'A4:83:E7:2C:55:F1', connection: 'wifi', signal: -58 },
-      { name: 'Printer', ip: '100.10.10.40', mac: '18:A9:05:C0:1B:2D', connection: 'ethernet' },
-    ],
-  };
+  for (const endpoint of candidates) {
+    try {
+      console.info('[huawei] device request sent: %s', endpoint);
+      const response = await withRetry(
+        `request ${endpoint}`,
+        () => session.client.get(endpoint),
+        2
+      );
+      const body = toResponseString(response.data);
+      lastResponse = body;
+      console.info('[huawei] device response received: %s (%d chars)', endpoint, body.length);
+
+      if (response.status >= 400) continue;
+      if (!body) continue;
+      if (isWaitingPage(body) || isLoginPage(body)) continue;
+
+      return { endpoint, body };
+    } catch (err) {
+      console.warn('[huawei] %s request failed at %s: %s', label, endpoint, err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  if (lastResponse) {
+    console.error('[huawei] raw %s response (truncated): %s', label, lastResponse.slice(0, 1200));
+  }
+  throw new RouterError('parse_error', `No usable ${label} response from router`);
 }
 
-// ---------------------------------------------------------------------------
-// Public API
-// ---------------------------------------------------------------------------
-
-/**
- * Log in to the router and return connected devices.
- * Falls back to mock data on any error — the `source` field tells callers
- * whether the data is live or synthetic.
- */
-export async function getConnectedDevices(): Promise<DevicesResponse> {
+export async function loginHuawei(): Promise<HuaweiSession> {
   const { ip, username, password, timeout } = routerConfig.huawei;
-
-  console.info('[huawei] → connecting to %s', ip);
   const client = createHttpClient(ip, timeout);
 
   try {
-    console.info('[huawei] attempting login…');
-    await login(client, username, password);
-    console.info('[huawei] login OK — fetching device list…');
+    await withRetry('open login page', () => client.get('/'));
+    const tokenResponse = await withRetry('fetch login token', () =>
+      client.post('/asp/GetRandCount.asp', '')
+    );
+    const token = sanitiseToken(toResponseString(tokenResponse.data));
 
-    const [devices, status] = await Promise.all([
-      fetchDevices(client),
-      fetchStatus(client),
-    ]);
+    const payload = new URLSearchParams();
+    payload.append('UserName', username);
+    payload.append('PassWord', encodePassword(password));
+    payload.append('Language', LOGIN_LANGUAGE);
+    payload.append('x.X_HW_Token', token);
 
-    console.info('[huawei] ✓ %d device(s) fetched (WAN: %s)', devices.length, status.wanIp ?? 'unknown');
+    await withRetry('submit router login', () =>
+      client.post('/login.cgi', payload.toString(), {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Referer: `${ip.replace(/\/+$/, '')}/login.asp`,
+          Cookie: `Cookie=body:Language:${LOGIN_LANGUAGE}:id=-1`,
+        },
+      })
+    );
 
-    return {
-      router: 'Huawei HG8245W5',
-      deviceCount: devices.length,
-      devices,
-      source: 'live',
-      fetchedAt: new Date().toISOString(),
-    };
+    const verify = await withRetry('verify router session', () =>
+      client.get('/index.asp')
+    );
+    const verifyBody = toResponseString(verify.data);
+    if (isWaitingPage(verifyBody) || isLoginPage(verifyBody)) {
+      throw new RouterError('invalid_credentials', 'Router login did not establish an authenticated session');
+    }
+
+    console.info('[huawei] router login success');
+    return { client, routerIP: ip, username };
   } catch (err) {
-    const routerErr = classifyError(err);
-    console.warn('[huawei] ✗ %s: %s', routerErr.kind, routerErr.message);
-    throw routerErr;
+    const axiosErr = err as AxiosError;
+    console.error(
+      '[huawei] login error details: code=%s status=%s message=%s',
+      axiosErr?.code ?? 'n/a',
+      axiosErr?.response?.status ?? 'n/a',
+      err instanceof Error ? err.message : String(err)
+    );
+    throw classifyError(err);
   }
 }
 
-/**
- * Retrieve high-level router status only.
- */
-export async function getRouterStatus(): Promise<RouterStatus> {
-  const { ip, username, password, timeout } = routerConfig.huawei;
-  const client = createHttpClient(ip, timeout);
+export async function fetchLanDevices(session: HuaweiSession): Promise<LanDeviceEntry[]> {
+  const payload = await fetchScriptPayload(session, 'LAN device', [
+    '/html/bbsp/common/GetLanUserDevInfo.asp',
+    '/GetLanUserDevInfo.asp',
+  ]);
 
-  await login(client, username, password);
-  const partial = await fetchStatus(client);
-  const devices = await fetchDevices(client);
+  const parsed = parseLanUserDeviceScript(payload.body);
+  if (parsed.length > 0) return parsed;
+
+  const legacy = parseLegacyLanArray(payload.body);
+  if (legacy.length > 0) return legacy;
+
+  if (/USERDevice|DevInfoArry|UserDevinfo/i.test(payload.body)) {
+    return [];
+  }
+
+  console.error('[huawei] raw LAN response (truncated): %s', payload.body.slice(0, 1200));
+  throw new RouterError('parse_error', `Unable to parse LAN device payload from ${payload.endpoint}`);
+}
+
+export async function fetchDhcpDevices(session: HuaweiSession): Promise<DhcpDeviceEntry[]> {
+  const payload = await fetchScriptPayload(session, 'DHCP device', [
+    '/html/bbsp/common/GetLanUserDhcpInfo.asp',
+    '/GetLanUserDhcpInfo.asp',
+  ]);
+
+  const parsed = parseDhcpScript(payload.body);
+  if (parsed.length > 0) return parsed;
+
+  const legacy = parseLegacyDhcpArray(payload.body);
+  if (legacy.length > 0) return legacy;
+
+  if (/DHCPInfo|DhcpInfoArry|UserDhcpinfo/i.test(payload.body)) {
+    return [];
+  }
+
+  console.error('[huawei] raw DHCP response (truncated): %s', payload.body.slice(0, 1200));
+  throw new RouterError('parse_error', `Unable to parse DHCP payload from ${payload.endpoint}`);
+}
+
+export async function getHuaweiDevices(): Promise<HuaweiDevicesResponse> {
+  const session = await loginHuawei();
+
+  const lanEntries = await fetchLanDevices(session);
+  let dhcpEntries: DhcpDeviceEntry[] = [];
+
+  try {
+    dhcpEntries = await fetchDhcpDevices(session);
+  } catch (err) {
+    console.warn('[huawei] DHCP enrichment unavailable: %s', err instanceof Error ? err.message : String(err));
+  }
+
+  const devices = mergeDevices(lanEntries, dhcpEntries);
+  console.info('[huawei] parsed device count: %d', devices.length);
 
   return {
-    model: 'Huawei HG8245W5',
-    firmwareVersion: partial.firmwareVersion ?? 'unknown',
-    uptime: partial.uptime ?? 0,
-    wanIp: partial.wanIp ?? 'unknown',
-    wanStatus: partial.wanStatus ?? 'unknown',
-    cpuUsage: partial.cpuUsage ?? 0,
-    memoryUsage: partial.memoryUsage ?? 0,
-    ssid: partial.ssid,
-    ssid5g: partial.ssid5g,
-    connectedClients: devices.length,
+    router: ROUTER_NAME,
+    routerIP: stripProtocol(session.routerIP),
+    deviceCount: devices.length,
+    devices,
+    source: 'live',
+    fetchedAt: new Date().toISOString(),
   };
 }
 
-/**
- * Alias: fetch WiFi clients specifically.
- */
-export async function getWifiClients(): Promise<RouterDevice[]> {
-  const all = await getConnectedDevices();
-  return all.devices.filter((d) => d.connection === 'wifi');
+export async function getConnectedDevices(): Promise<HuaweiDevicesResponse> {
+  return getHuaweiDevices();
+}
+
+export async function getRouterStatus() {
+  const data = await getHuaweiDevices();
+  return {
+    model: ROUTER_NAME,
+    firmwareVersion: 'unknown',
+    uptime: 0,
+    wanIp: 'unknown',
+    wanStatus: 'unknown' as const,
+    cpuUsage: 0,
+    memoryUsage: 0,
+    connectedClients: data.deviceCount,
+  };
+}
+
+export async function getWifiClients(): Promise<HuaweiDevice[]> {
+  const data = await getHuaweiDevices();
+  return data.devices.filter((device) => device.connection === 'wifi');
 }

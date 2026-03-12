@@ -1,4 +1,4 @@
-# myrouter.alijah.dev
+﻿# myrouter.alijah.dev
 
 A modern cloud dashboard for remotely monitoring and controlling network routers and devices.
 
@@ -58,40 +58,39 @@ npm run dev
 
 ```
 app/
-├── login/          # Login page
-├── dashboard/      # Main dashboard
-├── routers/        # Router list and details
-├── devices/        # Connected devices
-├── network/        # Network topology
-└── settings/       # User settings
+â”œâ”€â”€ login/          # Login page
+â”œâ”€â”€ dashboard/      # Main dashboard
+â”œâ”€â”€ routers/        # Router list and details
+â”œâ”€â”€ devices/        # Connected devices
+â”œâ”€â”€ network/        # Network topology
+â””â”€â”€ settings/       # User settings
 
 components/
-├── custom/         # Custom components
-│   ├── StatusBadge.tsx
-│   ├── ConnectionIndicator.tsx
-│   ├── RouterCard.tsx
-│   ├── DeviceCard.tsx
-│   ├── BandwidthChart.tsx
-│   ├── NetworkMap.tsx
-│   ├── Sidebar.tsx
-│   └── TopNavbar.tsx
-└── ui/             # shadcn/ui components
+â”œâ”€â”€ custom/         # Custom components
+â”‚   â”œâ”€â”€ StatusBadge.tsx
+â”‚   â”œâ”€â”€ ConnectionIndicator.tsx
+â”‚   â”œâ”€â”€ RouterCard.tsx
+â”‚   â”œâ”€â”€ DeviceCard.tsx
+â”‚   â”œâ”€â”€ BandwidthChart.tsx
+â”‚   â”œâ”€â”€ NetworkMap.tsx
+â”‚   â”œâ”€â”€ Sidebar.tsx
+â”‚   â””â”€â”€ TopNavbar.tsx
+â””â”€â”€ ui/             # shadcn/ui components
 
 lib/
-├── api.ts          # API client
-├── websocket.ts    # WebSocket integration
-├── mockData.ts     # Mock data for testing
-└── utils.ts        # Utility functions
+â”œâ”€â”€ api.ts          # API client
+â”œâ”€â”€ websocket.ts    # WebSocket integration
+â””â”€â”€ utils.ts        # Utility functions
 
 store/
-├── routerStore.ts  # Router state management
-├── deviceStore.ts  # Device state management
-└── networkStore.ts # Network state management
+â”œâ”€â”€ routerStore.ts  # Router state management
+â”œâ”€â”€ deviceStore.ts  # Device state management
+â””â”€â”€ networkStore.ts # Network state management
 
 types/
-├── router.ts       # Router type definitions
-├── device.ts       # Device type definitions
-└── network.ts      # Network type definitions
+â”œâ”€â”€ router.ts       # Router type definitions
+â”œâ”€â”€ device.ts       # Device type definitions
+â””â”€â”€ network.ts      # Network type definitions
 ```
 
 ## Pages
@@ -105,10 +104,7 @@ types/
 
 ## API Integration
 
-The application includes a mock data mode for development. To switch to real API:
-
-1. Set `USE_MOCK_DATA = false` in `lib/api.ts`
-2. Configure `NEXT_PUBLIC_API_URL` in your environment
+Configure `NEXT_PUBLIC_API_URL` in your environment if your backend is not served from the same Next.js app.
 
 ## WebSocket Events
 
@@ -121,3 +117,4 @@ The application includes a mock data mode for development. To switch to real API
 ## License
 
 MIT
+
