@@ -63,7 +63,7 @@ export interface TendaDevicesResponse {
   deviceCount: number;
   devices: TendaDevice[];
   status: Partial<TendaStatus>;
-  source: 'live' | 'mock';
+  source: 'live';
   fetchedAt: string;
 }
 
@@ -361,29 +361,6 @@ function classifyError(err: unknown): RouterError {
     }
   }
   return new RouterError('unknown', String(err), err);
-}
-
-// ---------------------------------------------------------------------------
-// Mock fallback data
-// ---------------------------------------------------------------------------
-
-export function getMockTendaResponse(model: 'N301' | 'F3', ip: string): TendaDevicesResponse {
-  const baseOctet = model === 'N301' ? 10 : 20;
-  return {
-    router: `Tenda ${model}`,
-    routerIp: ip,
-    deviceCount: model === 'N301' ? 3 : 2,
-    source: 'mock',
-    fetchedAt: new Date().toISOString(),
-    status: { model: `Tenda ${model}`, wanIp: ip, wanStatus: 'unknown', connectedClients: model === 'N301' ? 3 : 2 },
-    devices: [
-      { name: `Phone-${model}`, ip: `192.168.1.${baseOctet + 1}`, mac: `BB:CC:DD:EE:FF:${(baseOctet + 1).toString(16).padStart(2, '0').toUpperCase()}`, connection: 'wifi', signal: -60 },
-      { name: `Tablet-${model}`, ip: `192.168.1.${baseOctet + 2}`, mac: `BB:CC:DD:EE:FF:${(baseOctet + 2).toString(16).padStart(2, '0').toUpperCase()}`, connection: 'wifi', signal: -65 },
-      ...(model === 'N301'
-        ? [{ name: `Laptop-${model}`, ip: `192.168.1.${baseOctet + 3}`, mac: `BB:CC:DD:EE:FF:${(baseOctet + 3).toString(16).padStart(2, '0').toUpperCase()}`, connection: 'wifi' as const, signal: -70 }]
-        : []),
-    ],
-  };
 }
 
 // ---------------------------------------------------------------------------

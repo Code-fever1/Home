@@ -15,7 +15,6 @@ import MockAdapter from 'axios-mock-adapter';
 import {
   getTendaN301Data,
   getTendaF3Data,
-  getMockTendaResponse,
   RouterError,
 } from '../tenda';
 
@@ -149,24 +148,3 @@ describe('Tenda F3', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// Mock fixture integrity
-// ---------------------------------------------------------------------------
-
-describe('getMockTendaResponse (fixture)', () => {
-  it('N301 fixture has correct structure', () => {
-    const m = getMockTendaResponse('N301', 'http://192.168.1.3');
-    expect(m.router).toBe('Tenda N301');
-    expect(m.devices.length).toBeGreaterThan(0);
-    for (const d of m.devices) {
-      expect(d).toHaveProperty('mac');
-      expect(d).toHaveProperty('ip');
-    }
-  });
-
-  it('F3 fixture has correct structure', () => {
-    const m = getMockTendaResponse('F3', 'http://192.168.1.4');
-    expect(m.router).toBe('Tenda F3');
-    expect(m.devices.length).toBeGreaterThan(0);
-  });
-});

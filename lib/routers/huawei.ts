@@ -499,11 +499,27 @@ export async function loginHuawei(): Promise<HuaweiSession> {
       })
     );
 
-    const verify = await withRetry('verify router session', () =>
-      client.get('/index.asp')
-    );
-    const verifyBody = toResponseString(verify.data);
-    if (isWaitingPage(verifyBody) || isLoginPage(verifyBody)) {
+    let authenticated = false;
+    let lastVerifyBody = '';
+    for (let attempt = 1; attempt <= 4; attempt += 1) {
+      const verify = await withRetry(`verify router session (attempt ${attempt})`, () =>
+        client.get('/index.asp')
+      );
+      const verifyBody = toResponseString(verify.data);
+      lastVerifyBody = verifyBody;
+
+      if (!isWaitingPage(verifyBody) && !isLoginPage(verifyBody)) {
+        authenticated = true;
+        break;
+      }
+
+      if (attempt < 4) {
+        await delay(180 * attempt);
+      }
+    }
+
+    if (!authenticated) {
+      console.error('[huawei] auth verify body (truncated): %s', lastVerifyBody.slice(0, 800));
       throw new RouterError('invalid_credentials', 'Router login did not establish an authenticated session');
     }
 

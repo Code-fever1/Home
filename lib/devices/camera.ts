@@ -8,7 +8,6 @@
  *   - Hikvision-style (/ISAPI/System/deviceInfo)
  *   - Dahua-style (/cgi-bin/magicBox.cgi)
  *
- * Falls back to a mock response if the camera is unreachable.
  */
 
 import axios, { AxiosInstance, AxiosError } from 'axios';
@@ -50,7 +49,7 @@ export interface CameraStatus {
   snapshotUrl: string;
   motionDetected: boolean;
   uptime?: number;
-  source: 'live' | 'mock';
+  source: 'live';
   fetchedAt: string;
   error?: { kind: string; message: string };
 }
@@ -199,29 +198,6 @@ function classifyError(err: unknown): CameraError {
     }
   }
   return new CameraError('unknown', String(err), err);
-}
-
-// ---------------------------------------------------------------------------
-// Mock fallback
-// ---------------------------------------------------------------------------
-
-export function getMockCameraStatus(): CameraStatus {
-  const ip = devicesConfig.camera.ip;
-  const { stream, snapshot } = buildStreamUrls(ip);
-
-  return {
-    device: 'IP Camera',
-    ip,
-    status: 'offline',
-    model: 'Generic IP Camera',
-    firmwareVersion: 'unknown',
-    streamUrl: stream,
-    snapshotUrl: snapshot,
-    motionDetected: false,
-    uptime: 0,
-    source: 'mock',
-    fetchedAt: new Date().toISOString(),
-  };
 }
 
 // ---------------------------------------------------------------------------

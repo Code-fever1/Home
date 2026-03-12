@@ -552,25 +552,6 @@ function classifyError(err: unknown): RouterError {
 }
 
 // ---------------------------------------------------------------------------
-// Mock fixture (test use only — never used at runtime)
-// ---------------------------------------------------------------------------
-
-export function getMockDlinkResponse(ip = 'http://192.168.1.5'): DlinkDevicesResponse {
-  return {
-    router: 'D-Link X1852E',
-    routerIp: ip,
-    deviceCount: 2,
-    devices: [
-      { name: 'Laptop-DLink', ip: '192.168.1.101', mac: 'AA:BB:CC:DD:EE:01', connection: 'wifi', signal: -42 },
-      { name: 'Phone-DLink', ip: '192.168.1.102', mac: 'AA:BB:CC:DD:EE:02', connection: 'wifi', signal: -55 },
-    ],
-    source: 'live',
-    fetchedAt: new Date().toISOString(),
-    status: { model: 'D-Link X1852E', wanIp: 'unknown', wanStatus: 'unknown' },
-  };
-}
-
-// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 

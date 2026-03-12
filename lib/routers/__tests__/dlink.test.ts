@@ -15,7 +15,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-import { getDlinkData, getMockDlinkResponse, RouterError } from '../dlink';
+import { getDlinkData, RouterError } from '../dlink';
 
 // Stub config so requireEnv() never throws during tests.
 vi.mock('@/lib/config', () => ({
@@ -242,18 +242,3 @@ describe('Timeout', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// 8. Mock fixture
-// ---------------------------------------------------------------------------
-
-describe('getMockDlinkResponse (fixture)', () => {
-  it('returns a valid fixture with 2 devices', () => {
-    const m = getMockDlinkResponse('http://192.168.0.1');
-    expect(m.router).toBe('D-Link X1852E');
-    expect(m.devices.length).toBe(2);
-    for (const d of m.devices) {
-      expect(d).toHaveProperty('mac');
-      expect(d).toHaveProperty('ip');
-    }
-  });
-});

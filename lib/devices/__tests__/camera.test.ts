@@ -13,7 +13,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-import { getCameraStatus, getMockCameraStatus, CameraError } from '../camera';
+import { getCameraStatus, CameraError } from '../camera';
 
 // Stub config so requireEnv() never throws during tests.
 vi.mock('@/lib/config', () => ({
@@ -147,16 +147,3 @@ describe('Timeout handling', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// 7. Mock fixture
-// ---------------------------------------------------------------------------
-
-describe('getMockCameraStatus (fixture)', () => {
-  it('returns a structurally valid camera fixture', () => {
-    const m = getMockCameraStatus();
-    expect(m.device).toBeTruthy();
-    expect(m.streamUrl).toBeTruthy();
-    expect(m.snapshotUrl).toBeTruthy();
-    expect(typeof m.motionDetected).toBe('boolean');
-  });
-});
